@@ -38,6 +38,108 @@ export type Database = {
         }
         Relationships: []
       }
+      suppliers: {
+        Row: {
+          address: string | null
+          city: string | null
+          commercial_register: string | null
+          company_name: string | null
+          contact1_email: string | null
+          contact1_name: string | null
+          contact1_phone: string | null
+          contact1_title: string | null
+          contact1_whatsapp: string | null
+          contact2_email: string | null
+          contact2_name: string | null
+          contact2_phone: string | null
+          contact2_title: string | null
+          contact2_whatsapp: string | null
+          country: string | null
+          created_at: string | null
+          credit_days: number | null
+          credit_limit: number | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          monthly_limit: number | null
+          name: string
+          notes: string | null
+          payment_terms: string | null
+          phone: string | null
+          rating: number | null
+          single_order_limit: number | null
+          tax_number: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          commercial_register?: string | null
+          company_name?: string | null
+          contact1_email?: string | null
+          contact1_name?: string | null
+          contact1_phone?: string | null
+          contact1_title?: string | null
+          contact1_whatsapp?: string | null
+          contact2_email?: string | null
+          contact2_name?: string | null
+          contact2_phone?: string | null
+          contact2_title?: string | null
+          contact2_whatsapp?: string | null
+          country?: string | null
+          created_at?: string | null
+          credit_days?: number | null
+          credit_limit?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          monthly_limit?: number | null
+          name: string
+          notes?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          rating?: number | null
+          single_order_limit?: number | null
+          tax_number?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          commercial_register?: string | null
+          company_name?: string | null
+          contact1_email?: string | null
+          contact1_name?: string | null
+          contact1_phone?: string | null
+          contact1_title?: string | null
+          contact1_whatsapp?: string | null
+          contact2_email?: string | null
+          contact2_name?: string | null
+          contact2_phone?: string | null
+          contact2_title?: string | null
+          contact2_whatsapp?: string | null
+          country?: string | null
+          created_at?: string | null
+          credit_days?: number | null
+          credit_limit?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          monthly_limit?: number | null
+          name?: string
+          notes?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          rating?: number | null
+          single_order_limit?: number | null
+          tax_number?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       system_settings: {
         Row: {
           id: string

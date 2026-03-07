@@ -8,9 +8,12 @@ import {
   Calculator,
   LogOut,
   Store,
+  Truck,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth, AppRole } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
   SidebarContent,
@@ -24,30 +27,45 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface MenuItem {
   title: string;
   url: string;
   icon: React.ComponentType<{ className?: string }>;
   roles: AppRole[];
+  badge?: string | number;
 }
-
-const menuItems: MenuItem[] = [
-  { title: "لوحة التحكم", url: "/dashboard/admin", icon: LayoutDashboard, roles: ["admin"] },
-  { title: "لوحة التحكم", url: "/dashboard/accountant", icon: LayoutDashboard, roles: ["accountant"] },
-  { title: "لوحة التحكم", url: "/dashboard/employee", icon: LayoutDashboard, roles: ["employee"] },
-  { title: "المستخدمون", url: "/users", icon: Users, roles: ["admin"] },
-  { title: "المنتجات", url: "/products", icon: Package, roles: ["admin", "employee"] },
-  { title: "المبيعات", url: "/sales", icon: ShoppingCart, roles: ["admin", "accountant", "employee"] },
-  { title: "الفواتير", url: "/invoices", icon: FileText, roles: ["admin", "accountant"] },
-  { title: "المحاسبة", url: "/accounting", icon: Calculator, roles: ["admin", "accountant"] },
-  { title: "الإعدادات", url: "/settings", icon: Settings, roles: ["admin"] },
-];
 
 export function AppSidebar() {
   const { role, signOut } = useAuth();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
+
+  const { data: supplierCount } = useQuery({
+    queryKey: ["suppliers-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("suppliers")
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true);
+      if (error) return 0;
+      return count ?? 0;
+    },
+  });
+
+  const menuItems: MenuItem[] = [
+    { title: "لوحة التحكم", url: "/dashboard/admin", icon: LayoutDashboard, roles: ["admin"] },
+    { title: "لوحة التحكم", url: "/dashboard/accountant", icon: LayoutDashboard, roles: ["accountant"] },
+    { title: "لوحة التحكم", url: "/dashboard/employee", icon: LayoutDashboard, roles: ["employee"] },
+    { title: "المستخدمون", url: "/users", icon: Users, roles: ["admin"] },
+    { title: "الموردون", url: "/suppliers", icon: Truck, roles: ["admin", "accountant", "employee"], badge: supplierCount },
+    { title: "المنتجات", url: "/products", icon: Package, roles: ["admin", "employee"] },
+    { title: "المبيعات", url: "/sales", icon: ShoppingCart, roles: ["admin", "accountant", "employee"] },
+    { title: "الفواتير", url: "/invoices", icon: FileText, roles: ["admin", "accountant"] },
+    { title: "المحاسبة", url: "/accounting", icon: Calculator, roles: ["admin", "accountant"] },
+    { title: "الإعدادات", url: "/settings", icon: Settings, roles: ["admin"] },
+  ];
 
   const filteredItems = menuItems.filter((item) => role && item.roles.includes(role));
 
@@ -76,7 +94,16 @@ export function AppSidebar() {
                       activeClassName="bg-sidebar-accent text-sidebar-primary font-semibold"
                     >
                       <item.icon className="ml-2 h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && (
+                        <span className="flex-1 flex items-center justify-between">
+                          {item.title}
+                          {item.badge != null && Number(item.badge) > 0 && (
+                            <Badge variant="secondary" className="mr-1 text-[10px] px-1.5 py-0 h-5 min-w-[20px] justify-center">
+                              {item.badge.toLocaleString("en-US")}
+                            </Badge>
+                          )}
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
