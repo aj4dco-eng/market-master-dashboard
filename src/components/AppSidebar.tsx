@@ -97,7 +97,7 @@ export function AppSidebar() {
                       {!collapsed && (
                         <span className="flex-1 flex items-center justify-between">
                           {item.title}
-                          {item.badge != null && item.badge > 0 && (
+                          {item.badge != null && Number(item.badge) > 0 && (
                             <Badge variant="secondary" className="mr-1 text-[10px] px-1.5 py-0 h-5 min-w-[20px] justify-center">
                               {item.badge.toLocaleString("en-US")}
                             </Badge>
