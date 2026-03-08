@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +42,7 @@ export interface Product {
 
 export default function ProductsPage() {
   const { role } = useAuth();
+  const perm = usePermissions();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -51,7 +53,6 @@ export default function ProductsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deactivateId, setDeactivateId] = useState<string | null>(null);
-  const canEdit = role === "admin" || role === "employee";
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
@@ -185,7 +186,7 @@ export default function ProductsPage() {
                 <List className="h-4 w-4" />
               </Button>
             </div>
-            {canEdit && (
+            {perm.canCreate("products") && (
               <Button onClick={() => { setEditingProduct(null); setDialogOpen(true); }}>
                 <Plus className="ml-2 h-4 w-4" />
                 إضافة منتج
@@ -288,7 +289,7 @@ export default function ProductsPage() {
                         <span className={`text-xs ${getStockColor(product.current_stock ?? 0, product.min_stock_alert ?? 0)}`}>
                           مخزون: {(product.current_stock ?? 0).toLocaleString("en-US")}
                         </span>
-                        {canEdit && (
+                        {perm.canEdit("products") && (
                           <Button
                             variant="ghost"
                             size="icon"
@@ -355,12 +356,12 @@ export default function ProductsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
-                          {canEdit && (
+                          {perm.canEdit("products") && (
                             <Button variant="ghost" size="sm" onClick={() => { setEditingProduct(product); setDialogOpen(true); }}>
                               تعديل
                             </Button>
                           )}
-                          {role === "admin" && product.is_active && (
+                          {perm.canDelete("products") && product.is_active && (
                             <Button
                               variant="ghost"
                               size="sm"

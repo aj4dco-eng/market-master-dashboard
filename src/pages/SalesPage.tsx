@@ -13,6 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { ShoppingCart, Receipt, Eye, XCircle, Printer } from "lucide-react";
@@ -24,6 +25,7 @@ const statusLabel: Record<string, string> = { completed: "مكتملة", cancell
 
 export default function SalesPage() {
   const { user, role } = useAuth();
+  const perm = usePermissions();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const now = new Date();
@@ -145,7 +147,7 @@ export default function SalesPage() {
             <h1 className="text-2xl font-bold">المبيعات</h1>
             <Badge variant="secondary">{filtered.length}</Badge>
           </div>
-          {(role === "admin" || role === "employee") && (
+          {perm.canView("pos") && (
             <Button onClick={() => navigate("/pos")}><ShoppingCart className="ml-2 h-4 w-4" />نقطة البيع</Button>
           )}
         </div>
@@ -228,7 +230,7 @@ export default function SalesPage() {
                       <TableCell>
                         <div className="flex gap-1">
                           <Button variant="ghost" size="sm" onClick={() => handleDetail(s)}><Eye className="h-4 w-4" /></Button>
-                          {role === "admin" && s.status === "completed" && s.created_at?.split("T")[0] === today && (
+                          {perm.hasPermission("sales", "cancel") && s.status === "completed" && s.created_at?.split("T")[0] === today && (
                             <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setCancelId(s.id)}>
                               <XCircle className="h-4 w-4" />
                             </Button>

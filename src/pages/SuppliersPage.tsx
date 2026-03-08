@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +64,7 @@ function RatingStars({ rating }: { rating: number | null }) {
 
 export default function SuppliersPage() {
   const { role } = useAuth();
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -70,7 +72,6 @@ export default function SuppliersPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
-  const isAdmin = role === "admin";
 
   const { data: suppliers = [], isLoading } = useQuery({
     queryKey: ["suppliers"],
@@ -120,7 +121,7 @@ export default function SuppliersPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">الموردون</h1>
-          {isAdmin && (
+          {canCreate("suppliers") && (
             <Button onClick={() => { setEditingSupplier(null); setDialogOpen(true); }}>
               <Plus className="ml-2 h-4 w-4" />
               إضافة مورد
@@ -208,7 +209,7 @@ export default function SuppliersPage() {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {isAdmin && (
+                        {canEdit("suppliers") && (
                           <>
                             <Button
                               variant="ghost"
@@ -220,7 +221,7 @@ export default function SuppliersPage() {
                             >
                               تعديل
                             </Button>
-                            {supplier.is_active && (
+                            {canDelete("suppliers") && supplier.is_active && (
                               <Button
                                 variant="ghost"
                                 size="sm"

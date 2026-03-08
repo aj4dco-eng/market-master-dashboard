@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
 import { Plus, Receipt } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -31,6 +32,7 @@ type Expense = {
 
 export default function ExpensesPage() {
   const { user } = useAuth();
+  const perm = usePermissions();
   const queryClient = useQueryClient();
   const now = new Date();
 
@@ -151,7 +153,7 @@ export default function ExpensesPage() {
             <h1 className="text-2xl font-bold">المصروفات</h1>
             <Badge variant="secondary">{filtered.length}</Badge>
           </div>
-          <Button onClick={() => { resetForm(); setDialogOpen(true); }}><Plus className="ml-2 h-4 w-4" />إضافة مصروف</Button>
+          {perm.canCreate("expenses") && <Button onClick={() => { resetForm(); setDialogOpen(true); }}><Plus className="ml-2 h-4 w-4" />إضافة مصروف</Button>}
         </div>
 
         <div className="flex flex-wrap gap-2 items-center">
