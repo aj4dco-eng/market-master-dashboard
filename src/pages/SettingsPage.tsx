@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,20 +14,24 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Save, Plus, Pencil, Trash2 } from "lucide-react";
+import { Save, Plus, Pencil, Trash2, AlertTriangle } from "lucide-react";
 
 export default function SettingsPage() {
+  const { role } = useAuth();
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">الإعدادات</h1>
         <Tabs defaultValue="store" dir="rtl">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className={`grid w-full ${role === "admin" ? "grid-cols-3" : "grid-cols-2"}`}>
             <TabsTrigger value="store">إعدادات المتجر</TabsTrigger>
             <TabsTrigger value="account">إعدادات الحساب</TabsTrigger>
+            {role === "admin" && <TabsTrigger value="danger" className="text-destructive">منطقة الخطر</TabsTrigger>}
           </TabsList>
           <TabsContent value="store"><StoreSettings /></TabsContent>
           <TabsContent value="account"><AccountSettings /></TabsContent>
+          {role === "admin" && <TabsContent value="danger"><DangerZone /></TabsContent>}
         </Tabs>
       </div>
     </DashboardLayout>
@@ -155,6 +159,79 @@ function AccountSettings() {
         <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="w-full">
           <Save className="ml-2 h-4 w-4" />{saveMutation.isPending ? "جاري الحفظ..." : "حفظ"}
         </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function DangerZone() {
+  const queryClient = useQueryClient();
+  const [confirmText, setConfirmText] = useState("");
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("delete-demo-data");
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      setConfirmText("");
+      toast.success("تم حذف جميع البيانات التجريبية بنجاح");
+    },
+    onError: (e: any) => toast.error(e.message || "حدث خطأ أثناء الحذف"),
+  });
+
+  return (
+    <Card className="mt-4 border-destructive/50">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-destructive" />
+          <CardTitle className="text-destructive">حذف البيانات التجريبية</CardTitle>
+        </div>
+        <CardDescription>
+          سيتم حذف جميع البيانات (الموردين، المنتجات، الأصناف، الطلبيات، المبيعات، الفواتير، المصروفات، الجرد، سجل النشاط) مع الإبقاء على المستخدمين وإعدادات النظام والصلاحيات.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" className="w-full">
+              <Trash2 className="ml-2 h-4 w-4" />
+              حذف جميع البيانات التجريبية
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>هل أنت متأكد تماماً؟</AlertDialogTitle>
+              <AlertDialogDescription className="space-y-2">
+                <span className="block">هذا الإجراء <strong>لا يمكن التراجع عنه</strong>. سيتم حذف جميع البيانات التالية نهائياً:</span>
+                <span className="block text-sm">الموردين • المنتجات • الأصناف • الطلبيات • المبيعات • الفواتير • المصروفات • الجرد • سجل النشاط</span>
+                <span className="block mt-2">اكتب <strong>حذف</strong> للتأكيد:</span>
+              </AlertDialogDescription>
+              <Input
+                value={confirmText}
+                onChange={e => setConfirmText(e.target.value)}
+                placeholder="اكتب: حذف"
+                className="mt-2"
+              />
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setConfirmText("")}>إلغاء</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={confirmText !== "حذف" || deleteMutation.isPending}
+                onClick={(e) => {
+                  e.preventDefault();
+                  deleteMutation.mutate();
+                }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteMutation.isPending ? "جاري الحذف..." : "حذف نهائي"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );
