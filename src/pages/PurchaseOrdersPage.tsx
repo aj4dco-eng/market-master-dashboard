@@ -66,6 +66,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function PurchaseOrdersPage() {
   const { role } = useAuth();
   const perm = usePermissions();
+  const { logActivity } = useActivityLog();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");

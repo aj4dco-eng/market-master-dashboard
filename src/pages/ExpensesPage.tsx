@@ -34,6 +34,7 @@ type Expense = {
 export default function ExpensesPage() {
   const { user } = useAuth();
   const perm = usePermissions();
+  const { logActivity } = useActivityLog();
   const queryClient = useQueryClient();
   const now = new Date();
 

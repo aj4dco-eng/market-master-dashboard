@@ -66,6 +66,7 @@ function RatingStars({ rating }: { rating: number | null }) {
 export default function SuppliersPage() {
   const { role } = useAuth();
   const { canCreate, canEdit, canDelete } = usePermissions();
+  const { logActivity } = useActivityLog();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");

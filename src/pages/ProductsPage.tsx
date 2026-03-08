@@ -44,6 +44,7 @@ export interface Product {
 export default function ProductsPage() {
   const { role } = useAuth();
   const perm = usePermissions();
+  const { logActivity } = useActivityLog();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
