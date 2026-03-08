@@ -5,7 +5,7 @@ import {
   Package,
   ShoppingCart,
   FileText,
-  Calculator,
+  Receipt,
   LogOut,
   Store,
   Truck,
@@ -69,7 +69,7 @@ export function AppSidebar() {
     { title: "التقارير", url: "/reports", icon: BarChart3, roles: ["admin", "accountant"] },
     { title: "المبيعات", url: "/sales", icon: ShoppingCart, roles: ["admin", "accountant", "employee"] },
     { title: "الفواتير", url: "/invoices", icon: FileText, roles: ["admin", "accountant"] },
-    { title: "المحاسبة", url: "/accounting", icon: Calculator, roles: ["admin", "accountant"] },
+    { title: "المصروفات", url: "/expenses", icon: Receipt, roles: ["admin", "accountant"] },
     { title: "الإعدادات", url: "/settings", icon: Settings, roles: ["admin"] },
   ];
 
