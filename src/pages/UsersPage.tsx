@@ -42,6 +42,7 @@ const roleBadgeVariant: Record<string, "default" | "secondary" | "outline"> = { 
 
 export default function UsersPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
