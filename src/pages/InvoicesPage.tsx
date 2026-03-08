@@ -400,7 +400,7 @@ export default function InvoicesPage() {
                 </div>
 
                 {detailInvoice.image_url && (
-                  <InvoiceImage path={detailInvoice.image_url} />
+                  <SignedImage bucket="invoices" path={detailInvoice.image_url} />
                 )}
 
                 <div>
