@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
 import { Plus, Search, FileText, AlertTriangle, CreditCard, Eye } from "lucide-react";
 
@@ -214,7 +215,7 @@ export default function InvoicesPage() {
             <h1 className="text-2xl font-bold">الفواتير</h1>
             <Badge variant="secondary">{invoices?.length ?? 0}</Badge>
           </div>
-          <Button onClick={() => { resetNewForm(); setNewOpen(true); }}><Plus className="ml-2 h-4 w-4" />فاتورة جديدة</Button>
+          {perm.canCreate("invoices") && <Button onClick={() => { resetNewForm(); setNewOpen(true); }}><Plus className="ml-2 h-4 w-4" />فاتورة جديدة</Button>}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

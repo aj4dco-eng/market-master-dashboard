@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
 import { Plus, UserCog, UserX } from "lucide-react";
 
@@ -155,7 +156,7 @@ export default function UsersPage() {
             <h1 className="text-2xl font-bold">إدارة المستخدمين</h1>
             <Badge variant="secondary">{users?.length ?? 0}</Badge>
           </div>
-          <Button onClick={openAdd}><Plus className="ml-2 h-4 w-4" />إضافة مستخدم</Button>
+          {perm.canCreate("users") && <Button onClick={openAdd}><Plus className="ml-2 h-4 w-4" />إضافة مستخدم</Button>}
         </div>
 
         <Card>

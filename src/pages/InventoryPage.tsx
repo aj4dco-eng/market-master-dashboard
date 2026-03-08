@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
 import { Plus, Search, Camera, ClipboardCheck } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
@@ -47,8 +48,8 @@ type InventoryItem = {
 
 export default function InventoryPage() {
   const { role, user } = useAuth();
+  const perm = usePermissions();
   const queryClient = useQueryClient();
-  const canManage = role === "admin" || role === "accountant";
 
   const [newDialogOpen, setNewDialogOpen] = useState(false);
   const [sessionName, setSessionName] = useState("");
@@ -182,7 +183,7 @@ export default function InventoryPage() {
             <h1 className="text-2xl font-bold">الجرد</h1>
             <Badge variant="secondary">{sessions?.length ?? 0}</Badge>
           </div>
-          {canManage && <Button onClick={() => setNewDialogOpen(true)}><Plus className="ml-2 h-4 w-4" />جلسة جرد جديدة</Button>}
+          {perm.canCreate("inventory") && <Button onClick={() => setNewDialogOpen(true)}><Plus className="ml-2 h-4 w-4" />جلسة جرد جديدة</Button>}
         </div>
 
         <Card>
@@ -216,7 +217,7 @@ export default function InventoryPage() {
                         <TableCell>
                           <div className="flex gap-2">
                             <Button variant="ghost" size="sm" onClick={() => setSelectedSession(s)}>فتح</Button>
-                            {canManage && s.status === "in_progress" && (
+                            {perm.canEdit("inventory") && s.status === "in_progress" && (
                               <Button variant="ghost" size="sm" className="text-destructive" onClick={() => closeSession.mutate(s)}>إغلاق</Button>
                             )}
                           </div>
@@ -350,7 +351,7 @@ export default function InventoryPage() {
               </Card>
             </div>
 
-            {canManage && selectedSession?.status === "in_progress" && (
+            {perm.canEdit("inventory") && selectedSession?.status === "in_progress" && (
               <Button variant="destructive" className="w-full" onClick={() => closeSession.mutate(selectedSession)} disabled={closeSession.isPending}>
                 {closeSession.isPending ? "جاري الإغلاق..." : "إغلاق الجلسة"}
               </Button>

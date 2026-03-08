@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -64,6 +65,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function PurchaseOrdersPage() {
   const { role } = useAuth();
+  const perm = usePermissions();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -71,7 +73,6 @@ export default function PurchaseOrdersPage() {
   const [newOrderOpen, setNewOrderOpen] = useState(false);
   const [receiveOrderId, setReceiveOrderId] = useState<string | null>(null);
   const [viewOrderId, setViewOrderId] = useState<string | null>(null);
-  const canCreate = role === "admin" || role === "employee";
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["purchase-orders"],
@@ -135,7 +136,7 @@ export default function PurchaseOrdersPage() {
             <h1 className="text-2xl font-bold">طلبيات الشراء</h1>
             <Badge variant="secondary">{orders.length.toLocaleString("en-US")}</Badge>
           </div>
-          {canCreate && (
+          {perm.canCreate("orders") && (
             <Button onClick={() => setNewOrderOpen(true)}>
               <Plus className="ml-2 h-4 w-4" />
               طلبية جديدة
@@ -218,12 +219,12 @@ export default function PurchaseOrdersPage() {
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewOrderId(order.id)}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {(order.status === "pending" || order.status === "awaiting_approval") && canCreate && (
+                        {(order.status === "pending" || order.status === "awaiting_approval") && perm.canEdit("orders") && (
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setReceiveOrderId(order.id)}>
                             <PackageCheck className="h-4 w-4" />
                           </Button>
                         )}
-                        {(order.status === "pending" || order.status === "awaiting_approval") && role === "admin" && (
+                        {(order.status === "pending" || order.status === "awaiting_approval") && perm.canDelete("orders") && (
                           <Button
                             variant="ghost"
                             size="icon"
