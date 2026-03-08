@@ -228,13 +228,15 @@ function ProductsImportTab({ toast }: { toast: any }) {
       const row = selected[i];
       try {
         // Find or create category
-        const { data: cat } = await (supabase.from("categories" as any))
+        const { data: cat } = await supabase
+          .from("categories")
           .select("id").eq("name", row.category).single();
-        let catId = cat?.id;
+        let catId = (cat as any)?.id;
         if (!catId) {
-          const { data: newCat } = await (supabase.from("categories" as any))
+          const { data: newCat } = await supabase
+            .from("categories")
             .insert({ name: row.category }).select().single();
-          catId = newCat?.id;
+          catId = (newCat as any)?.id;
         }
 
         const existing = (existingProducts || []).find(
@@ -242,14 +244,14 @@ function ProductsImportTab({ toast }: { toast: any }) {
         );
 
         if (existing) {
-          await (supabase.from("products" as any)).update({
+          await supabase.from("products").update({
             current_stock: row.qty,
             selling_price: row.price,
             category_id: catId,
-          }).eq("id", existing.id);
+          } as any).eq("id", (existing as any).id);
           updated++;
         } else {
-          await (supabase.from("products" as any)).insert({
+          await supabase.from("products").insert({
             name: row.name,
             category_id: catId,
             current_stock: row.qty,
@@ -258,7 +260,7 @@ function ProductsImportTab({ toast }: { toast: any }) {
             purchase_price: +(row.price * 0.8).toFixed(2),
             min_stock_alert: 5,
             unit: "قطعة",
-          });
+          } as any);
           imported++;
         }
       } catch { /* skip */ }
@@ -280,7 +282,7 @@ function ProductsImportTab({ toast }: { toast: any }) {
           onClick={() =>
             downloadTemplate("قالب_المنتجات.xlsx", [
               ["الصنف", "الفئة", "الكمية", "السعر", "الباركود"],
-              ["مثال: حليب", "ألبان", 100, 5.5, "123456"],
+              ["مثال: حليب", "ألبان", "100", "5.5", "123456"],
             ])
           }
         >
