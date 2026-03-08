@@ -29,6 +29,7 @@ const POSPage = lazy(() => import("./pages/POSPage"));
 const SalesPage = lazy(() => import("./pages/SalesPage"));
 const PermissionsPage = lazy(() => import("./pages/PermissionsPage"));
 const ImportPage = lazy(() => import("./pages/ImportPage"));
+const UserActivityPage = lazy(() => import("./pages/UserActivityPage"));
 
 const PageLoader = () => (
   <div className="flex-1 p-6 space-y-4 animate-pulse">
