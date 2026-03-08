@@ -68,7 +68,7 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
   useEffect(() => {
     if (open) {
       setSupplierId("");
-      setExpectedDate("");
+      setExpectedDate(new Date().toISOString().split("T")[0]);
       setNotes("");
       setItems([]);
       setProductSearch("");
