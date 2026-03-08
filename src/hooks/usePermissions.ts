@@ -16,6 +16,7 @@ export const MODULE_LABELS: Record<PermissionModule, string> = {
   dashboard: "لوحة التحكم",
   suppliers: "الموردون",
   products: "المنتجات",
+  categories: "الأصناف",
   orders: "الطلبيات",
   inventory: "الجرد",
   sales: "المبيعات",
