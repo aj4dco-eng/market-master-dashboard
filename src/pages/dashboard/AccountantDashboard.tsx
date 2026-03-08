@@ -102,7 +102,7 @@ export default function AccountantDashboard() {
     <DashboardLayout>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">لوحة تحكم المحاسب</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {stats.map((stat) => (
             <Card key={stat.title} className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
