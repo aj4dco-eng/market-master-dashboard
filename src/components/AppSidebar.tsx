@@ -71,6 +71,7 @@ export function AppSidebar() {
     { title: "المستخدمون", url: "/users", icon: Users, roles: ["admin"], permModule: "users" },
     { title: "الموردون", url: "/suppliers", icon: Truck, roles: ["admin", "accountant", "employee"], permModule: "suppliers", badge: supplierCount },
     { title: "المنتجات", url: "/products", icon: Package, roles: ["admin", "employee", "accountant"], permModule: "products" },
+    { title: "الأصناف", url: "/categories", icon: Tags, roles: ["admin", "employee", "accountant"], permModule: "categories" },
     { title: "الطلبيات", url: "/orders", icon: ClipboardList, roles: ["admin", "accountant", "employee"], permModule: "orders" },
     { title: "الجرد", url: "/inventory", icon: ClipboardCheck, roles: ["admin", "accountant", "employee"], permModule: "inventory" },
     { title: "التقارير", url: "/reports", icon: BarChart3, roles: ["admin", "accountant"], permModule: "reports" },
