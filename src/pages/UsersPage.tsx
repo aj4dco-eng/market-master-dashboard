@@ -141,8 +141,11 @@ export default function UsersPage() {
 
   const deactivateMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const { error } = await supabase.from("profiles").update({ is_active: false }).eq("id", userId);
+      const { data, error } = await supabase.functions.invoke("deactivate-user", {
+        body: { user_id: userId },
+      });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
     },
     onSuccess: (_data, userId) => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });

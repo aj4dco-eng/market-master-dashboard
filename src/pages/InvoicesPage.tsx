@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { SignedImage } from "@/components/SignedImage";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -148,8 +149,7 @@ export default function InvoicesPage() {
         const path = `${Date.now()}-${imageFile.name}`;
         const { error: upErr } = await supabase.storage.from("invoices").upload(path, imageFile);
         if (!upErr) {
-          const { data: urlData } = supabase.storage.from("invoices").getPublicUrl(path);
-          imageUrl = urlData.publicUrl;
+          imageUrl = path; // Store the path, not a public URL
         }
       }
       const { error } = await supabase.from("invoices" as any).insert({
@@ -401,9 +401,7 @@ export default function InvoicesPage() {
                 </div>
 
                 {detailInvoice.image_url && (
-                  <a href={detailInvoice.image_url} target="_blank" rel="noopener noreferrer">
-                    <img src={detailInvoice.image_url} alt="صورة الفاتورة" className="w-32 h-32 object-cover rounded-lg border cursor-pointer hover:opacity-80" />
-                  </a>
+                  <SignedImage bucket="invoices" path={detailInvoice.image_url} />
                 )}
 
                 <div>
