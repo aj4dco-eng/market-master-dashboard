@@ -49,6 +49,7 @@ interface SupplierFormData {
 export function SupplierDialog({ open, onOpenChange, supplier }: SupplierDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { logActivity } = useActivityLog();
   const isEdit = !!supplier;
 
   const { register, handleSubmit, reset, setValue, watch } = useForm<SupplierFormData>({

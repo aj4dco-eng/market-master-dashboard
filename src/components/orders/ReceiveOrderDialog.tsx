@@ -29,6 +29,7 @@ interface ReceiveItem extends PurchaseOrderItem {
 export function ReceiveOrderDialog({ orderId, open, onOpenChange, readOnly = false }: ReceiveOrderDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { logActivity } = useActivityLog();
   const [receiveItems, setReceiveItems] = useState<ReceiveItem[]>([]);
 
   const { data: order, isLoading: orderLoading } = useQuery({

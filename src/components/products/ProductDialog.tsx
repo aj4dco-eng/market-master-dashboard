@@ -26,6 +26,7 @@ const UNITS = ["قطعة", "كرتون", "كيلو", "لتر"];
 export function ProductDialog({ open, onOpenChange, product, categories, suppliers }: ProductDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { logActivity } = useActivityLog();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [scanning, setScanning] = useState(false);
   const scannerRef = useRef<any>(null);
