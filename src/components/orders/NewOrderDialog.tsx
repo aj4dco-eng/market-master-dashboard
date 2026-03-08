@@ -33,7 +33,7 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
   const queryClient = useQueryClient();
   const { logActivity } = useActivityLog();
   const [supplierId, setSupplierId] = useState("");
-  const [expectedDate, setExpectedDate] = useState("");
+  const [expectedDate, setExpectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<OrderItem[]>([]);
   const [productSearch, setProductSearch] = useState("");
