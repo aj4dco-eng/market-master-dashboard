@@ -6,7 +6,7 @@ export type PermissionModule =
   | "suppliers" | "products" | "orders" | "inventory" 
   | "sales" | "pos" | "invoices" | "expenses" 
   | "reports" | "users" | "settings" | "permissions"
-  | "import" | "dashboard";
+  | "import" | "dashboard" | "categories";
 
 export type PermissionAction = 
   | "view" | "create" | "edit" | "delete" 
