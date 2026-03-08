@@ -17,17 +17,21 @@ import { toast } from "sonner";
 import { Save, Plus, Pencil, Trash2, AlertTriangle } from "lucide-react";
 
 export default function SettingsPage() {
+  const { role } = useAuth();
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">الإعدادات</h1>
         <Tabs defaultValue="store" dir="rtl">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className={`grid w-full ${role === "admin" ? "grid-cols-3" : "grid-cols-2"}`}>
             <TabsTrigger value="store">إعدادات المتجر</TabsTrigger>
             <TabsTrigger value="account">إعدادات الحساب</TabsTrigger>
+            {role === "admin" && <TabsTrigger value="danger" className="text-destructive">منطقة الخطر</TabsTrigger>}
           </TabsList>
           <TabsContent value="store"><StoreSettings /></TabsContent>
           <TabsContent value="account"><AccountSettings /></TabsContent>
+          {role === "admin" && <TabsContent value="danger"><DangerZone /></TabsContent>}
         </Tabs>
       </div>
     </DashboardLayout>
