@@ -6,7 +6,7 @@ export type PermissionModule =
   | "suppliers" | "products" | "orders" | "inventory" 
   | "sales" | "pos" | "invoices" | "expenses" 
   | "reports" | "users" | "settings" | "permissions"
-  | "import" | "dashboard";
+  | "import" | "dashboard" | "categories";
 
 export type PermissionAction = 
   | "view" | "create" | "edit" | "delete" 
@@ -16,6 +16,7 @@ export const MODULE_LABELS: Record<PermissionModule, string> = {
   dashboard: "لوحة التحكم",
   suppliers: "الموردون",
   products: "المنتجات",
+  categories: "الأصناف",
   orders: "الطلبيات",
   inventory: "الجرد",
   sales: "المبيعات",
@@ -42,6 +43,7 @@ export const ACTION_LABELS: Record<PermissionAction, string> = {
 
 export const MODULE_ACTIONS: Record<PermissionModule, PermissionAction[]> = {
   dashboard: ["view"],
+  categories: ["view", "create", "edit", "delete"],
   suppliers: ["view", "create", "edit", "delete", "export"],
   products: ["view", "create", "edit", "delete", "edit_prices", "export"],
   orders: ["view", "create", "edit", "delete", "export"],
