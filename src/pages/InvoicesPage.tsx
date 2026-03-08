@@ -400,9 +400,7 @@ export default function InvoicesPage() {
                 </div>
 
                 {detailInvoice.image_url && (
-                  <a href={detailInvoice.image_url} target="_blank" rel="noopener noreferrer">
-                    <img src={detailInvoice.image_url} alt="صورة الفاتورة" className="w-32 h-32 object-cover rounded-lg border cursor-pointer hover:opacity-80" />
-                  </a>
+                  <InvoiceImage path={detailInvoice.image_url} />
                 )}
 
                 <div>
