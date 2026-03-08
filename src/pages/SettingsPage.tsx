@@ -163,3 +163,76 @@ function AccountSettings() {
     </Card>
   );
 }
+
+function DangerZone() {
+  const queryClient = useQueryClient();
+  const [confirmText, setConfirmText] = useState("");
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke("delete-demo-data");
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      setConfirmText("");
+      toast.success("تم حذف جميع البيانات التجريبية بنجاح");
+    },
+    onError: (e: any) => toast.error(e.message || "حدث خطأ أثناء الحذف"),
+  });
+
+  return (
+    <Card className="mt-4 border-destructive/50">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-destructive" />
+          <CardTitle className="text-destructive">حذف البيانات التجريبية</CardTitle>
+        </div>
+        <CardDescription>
+          سيتم حذف جميع البيانات (الموردين، المنتجات، الأصناف، الطلبيات، المبيعات، الفواتير، المصروفات، الجرد، سجل النشاط) مع الإبقاء على المستخدمين وإعدادات النظام والصلاحيات.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" className="w-full">
+              <Trash2 className="ml-2 h-4 w-4" />
+              حذف جميع البيانات التجريبية
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>هل أنت متأكد تماماً؟</AlertDialogTitle>
+              <AlertDialogDescription className="space-y-2">
+                <span className="block">هذا الإجراء <strong>لا يمكن التراجع عنه</strong>. سيتم حذف جميع البيانات التالية نهائياً:</span>
+                <span className="block text-sm">الموردين • المنتجات • الأصناف • الطلبيات • المبيعات • الفواتير • المصروفات • الجرد • سجل النشاط</span>
+                <span className="block mt-2">اكتب <strong>حذف</strong> للتأكيد:</span>
+              </AlertDialogDescription>
+              <Input
+                value={confirmText}
+                onChange={e => setConfirmText(e.target.value)}
+                placeholder="اكتب: حذف"
+                className="mt-2"
+              />
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setConfirmText("")}>إلغاء</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={confirmText !== "حذف" || deleteMutation.isPending}
+                onClick={(e) => {
+                  e.preventDefault();
+                  deleteMutation.mutate();
+                }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteMutation.isPending ? "جاري الحذف..." : "حذف نهائي"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </CardContent>
+    </Card>
+  );
+}
