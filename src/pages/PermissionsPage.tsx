@@ -48,9 +48,15 @@ export default function PermissionsPage() {
   const { data: users } = useQuery({
     queryKey: ["admin-users-for-perms"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("*, user_roles(role)").order("created_at");
+      const { data: profiles, error } = await supabase.from("profiles").select("*").order("created_at");
       if (error) throw error;
-      return (data ?? []) as unknown as UserProfile[];
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role");
+      const roleMap: Record<string, { role: string }[]> = {};
+      for (const r of roles ?? []) {
+        if (!roleMap[r.user_id]) roleMap[r.user_id] = [];
+        roleMap[r.user_id].push({ role: r.role });
+      }
+      return (profiles ?? []).map(p => ({ ...p, user_roles: roleMap[p.id] ?? [] })) as unknown as UserProfile[];
     },
   });
 

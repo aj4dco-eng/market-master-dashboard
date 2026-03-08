@@ -50,12 +50,18 @@ export default function UsersPage() {
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from("profiles")
-        .select("*, user_roles(role)")
+        .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as unknown as UserProfile[];
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role");
+      const roleMap: Record<string, { role: string }[]> = {};
+      for (const r of roles ?? []) {
+        if (!roleMap[r.user_id]) roleMap[r.user_id] = [];
+        roleMap[r.user_id].push({ role: r.role });
+      }
+      return (profiles ?? []).map(p => ({ ...p, user_roles: roleMap[p.id] ?? [] })) as unknown as UserProfile[];
     },
   });
 
