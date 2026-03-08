@@ -43,6 +43,7 @@ export const ACTION_LABELS: Record<PermissionAction, string> = {
 
 export const MODULE_ACTIONS: Record<PermissionModule, PermissionAction[]> = {
   dashboard: ["view"],
+  categories: ["view", "create", "edit", "delete"],
   suppliers: ["view", "create", "edit", "delete", "export"],
   products: ["view", "create", "edit", "delete", "edit_prices", "export"],
   orders: ["view", "create", "edit", "delete", "export"],
