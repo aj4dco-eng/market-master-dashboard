@@ -105,6 +105,21 @@ export default function PurchaseOrdersPage() {
     },
   });
 
+  const approveMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("purchase_orders")
+        .update({ status: "approved" })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
+      toast({ title: "تمت الموافقة على الطلبية" });
+      logActivity({ actionType: "update", module: "orders", description: "الموافقة على طلبية", details: { order_id: id } });
+    },
+  });
+
   const cancelMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
