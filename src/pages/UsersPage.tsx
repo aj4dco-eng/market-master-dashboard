@@ -108,26 +108,13 @@ export default function UsersPage() {
           if (r2) throw r2;
         }
       } else {
-        // Create new user
+        // Create new user via server-side edge function (avoids session hijack)
         if (!form.password) throw new Error("كلمة المرور مطلوبة");
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: form.email,
-          password: form.password,
-          options: { data: { full_name: form.full_name } }
+        const { data, error } = await supabase.functions.invoke("create-user", {
+          body: { email: form.email, password: form.password, full_name: form.full_name, role: form.role },
         });
-        if (authError) throw authError;
-        if (!authData.user) throw new Error("فشل إنشاء المستخدم");
-
-        await new Promise((r) => setTimeout(r, 1000));
-
-        await supabase.
-        from("profiles").
-        update({ full_name: form.full_name, is_active: true }).
-        eq("id", authData.user.id);
-
-        // Delete default role then insert desired
-        await supabase.from("user_roles").delete().eq("user_id", authData.user.id);
-        await supabase.from("user_roles").insert({ user_id: authData.user.id, role: form.role });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
       }
     },
     onSuccess: () => {
