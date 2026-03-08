@@ -14,7 +14,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
 import { Plus, UserCog, UserX } from "lucide-react";
 
@@ -24,7 +23,7 @@ type UserProfile = {
   email: string | null;
   is_active: boolean;
   created_at: string;
-  user_roles: { role: string }[];
+  user_roles: {role: string;}[];
 };
 
 type FormData = {
@@ -42,7 +41,6 @@ const roleBadgeVariant: Record<string, "default" | "secondary" | "outline"> = { 
 
 export default function UsersPage() {
   const { user } = useAuth();
-  const perm = usePermissions();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
@@ -52,19 +50,13 @@ export default function UsersPage() {
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase.
+      from("profiles").
+      select("*, user_roles(role)").
+      order("created_at", { ascending: false });
       if (error) throw error;
-      const { data: roles } = await supabase.from("user_roles").select("user_id, role");
-      const roleMap: Record<string, { role: string }[]> = {};
-      for (const r of roles ?? []) {
-        if (!roleMap[r.user_id]) roleMap[r.user_id] = [];
-        roleMap[r.user_id].push({ role: r.role });
-      }
-      return (profiles ?? []).map(p => ({ ...p, user_roles: roleMap[p.id] ?? [] })) as unknown as UserProfile[];
-    },
+      return (data ?? []) as unknown as UserProfile[];
+    }
   });
 
   const openAdd = () => {
@@ -79,8 +71,8 @@ export default function UsersPage() {
       full_name: u.full_name ?? "",
       email: u.email ?? "",
       password: "",
-      role: (u.user_roles?.[0]?.role as any) ?? "employee",
-      is_active: u.is_active,
+      role: u.user_roles?.[0]?.role as any ?? "employee",
+      is_active: u.is_active
     });
     setDialogOpen(true);
   };
@@ -89,16 +81,16 @@ export default function UsersPage() {
     mutationFn: async () => {
       if (editingUser) {
         // Update profile
-        const { error: pErr } = await supabase
-          .from("profiles")
-          .update({ full_name: form.full_name, is_active: form.is_active })
-          .eq("id", editingUser.id);
+        const { error: pErr } = await supabase.
+        from("profiles").
+        update({ full_name: form.full_name, is_active: form.is_active }).
+        eq("id", editingUser.id);
         if (pErr) throw pErr;
 
         // Upsert role
-        const { error: rErr } = await supabase
-          .from("user_roles")
-          .upsert({ user_id: editingUser.id, role: form.role } as any, { onConflict: "user_id,role" } as any);
+        const { error: rErr } = await supabase.
+        from("user_roles").
+        upsert({ user_id: editingUser.id, role: form.role } as any, { onConflict: "user_id,role" } as any);
         if (rErr) {
           // If upsert fails, try delete + insert
           await supabase.from("user_roles").delete().eq("user_id", editingUser.id);
@@ -111,17 +103,17 @@ export default function UsersPage() {
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: form.email,
           password: form.password,
-          options: { data: { full_name: form.full_name } },
+          options: { data: { full_name: form.full_name } }
         });
         if (authError) throw authError;
         if (!authData.user) throw new Error("فشل إنشاء المستخدم");
 
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 1000));
 
-        await supabase
-          .from("profiles")
-          .update({ full_name: form.full_name, is_active: true })
-          .eq("id", authData.user.id);
+        await supabase.
+        from("profiles").
+        update({ full_name: form.full_name, is_active: true }).
+        eq("id", authData.user.id);
 
         // Delete default role then insert desired
         await supabase.from("user_roles").delete().eq("user_id", authData.user.id);
@@ -133,7 +125,7 @@ export default function UsersPage() {
       setDialogOpen(false);
       toast.success(editingUser ? "تم تحديث المستخدم" : "تم إضافة المستخدم");
     },
-    onError: (e: any) => toast.error(e.message || "حدث خطأ"),
+    onError: (e: any) => toast.error(e.message || "حدث خطأ")
   });
 
   const deactivateMutation = useMutation({
@@ -146,7 +138,7 @@ export default function UsersPage() {
       setDeactivateId(null);
       toast.success("تم تعطيل المستخدم");
     },
-    onError: () => toast.error("حدث خطأ"),
+    onError: () => toast.error("حدث خطأ")
   });
 
   return (
@@ -157,15 +149,15 @@ export default function UsersPage() {
             <h1 className="text-2xl font-bold">إدارة المستخدمين</h1>
             <Badge variant="secondary">{users?.length ?? 0}</Badge>
           </div>
-          {perm.canCreate("users") && <Button onClick={openAdd}><Plus className="ml-2 h-4 w-4" />إضافة مستخدم</Button>}
+          <Button onClick={openAdd}><Plus className="ml-2 h-4 w-4" />إضافة مستخدم</Button>
         </div>
 
         <Card>
           <CardContent className="p-0">
-            {isLoading ? (
-              <div className="p-6 space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
-            ) : (
-              <Table>
+            {isLoading ?
+            <div className="p-6 space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div> :
+
+            <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>الاسم</TableHead>
@@ -177,38 +169,38 @@ export default function UsersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users?.map(u => {
-                    const role = u.user_roles?.[0]?.role ?? "employee";
-                    return (
-                      <TableRow key={u.id}>
+                  {users?.map((u) => {
+                  const role = u.user_roles?.[0]?.role ?? "employee";
+                  return (
+                    <TableRow key={u.id}>
                         <TableCell className="font-medium">{u.full_name || u.email || "-"}</TableCell>
                         <TableCell dir="ltr">{u.email ?? "-"}</TableCell>
                         <TableCell><Badge variant={roleBadgeVariant[role] ?? "outline"}>{roleLabel[role] ?? role}</Badge></TableCell>
                         <TableCell>
-                          {u.is_active
-                            ? <Badge className="bg-accent text-accent-foreground">نشط</Badge>
-                            : <Badge variant="secondary">معطل</Badge>}
+                          {u.is_active ?
+                        <Badge className="bg-accent text-accent-foreground">نشط</Badge> :
+                        <Badge variant="secondary">معطل</Badge>}
                         </TableCell>
                         <TableCell dir="ltr">{new Date(u.created_at).toLocaleDateString("en-GB")}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
                             <Button variant="ghost" size="sm" onClick={() => openEdit(u)}><UserCog className="h-4 w-4 ml-1" />تعديل</Button>
-                            {u.id !== user?.id && u.is_active && (
-                              <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDeactivateId(u.id)}>
+                            {u.id !== user?.id && u.is_active &&
+                          <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDeactivateId(u.id)}>
                                 <UserX className="h-4 w-4 ml-1" />تعطيل
                               </Button>
-                            )}
+                          }
                           </div>
                         </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                  {(!users || users.length === 0) && (
-                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">لا يوجد مستخدمون</TableCell></TableRow>
-                  )}
+                      </TableRow>);
+
+                })}
+                  {(!users || users.length === 0) &&
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">لا يوجد مستخدمون</TableCell></TableRow>
+                }
                 </TableBody>
               </Table>
-            )}
+            }
           </CardContent>
         </Card>
       </div>
@@ -220,19 +212,19 @@ export default function UsersPage() {
           <div className="space-y-4">
             <div>
               <Label>الاسم الكامل *</Label>
-              <Input value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} />
+              <Input value={form.full_name} onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))} />
             </div>
             <div>
               <Label>البريد الإلكتروني *</Label>
-              <Input type="email" dir="ltr" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} disabled={!!editingUser} />
+              <Input type="email" dir="ltr" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} disabled={!!editingUser} />
             </div>
             <div>
               <Label>{editingUser ? "كلمة مرور جديدة (اتركها فارغة لعدم التغيير)" : "كلمة المرور *"}</Label>
-              <Input type="password" dir="ltr" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
+              <Input type="password" dir="ltr" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} />
             </div>
             <div>
               <Label>الدور</Label>
-              <Select value={form.role} onValueChange={(v: any) => setForm(f => ({ ...f, role: v }))}>
+              <Select value={form.role} onValueChange={(v: any) => setForm((f) => ({ ...f, role: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">مدير</SelectItem>
@@ -241,19 +233,19 @@ export default function UsersPage() {
                 </SelectContent>
               </Select>
             </div>
-            {editingUser && (
-              <div>
+            {editingUser &&
+            <div className="flex items-center justify-between">
                 <Label>الحالة</Label>
-                <div className="flex items-center gap-2 mt-2">
-                  <Switch id="user-status" checked={form.is_active} onCheckedChange={v => setForm(f => ({ ...f, is_active: v }))} />
-                  <Label htmlFor="user-status" className="text-sm font-normal text-muted-foreground cursor-pointer">{form.is_active ? "نشط" : "معطل"}</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">{form.is_active ? "نشط" : "معطل"}</span>
+                  <Switch checked={form.is_active} onCheckedChange={(v) => setForm((f) => ({ ...f, is_active: v }))} />
                 </div>
               </div>
-            )}
+            }
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>إلغاء</Button>
-            <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !form.full_name || !form.email || (!editingUser && !form.password)}>
+            <Button variant="outline" onClick={() => setDialogOpen(false)} className="mx-[13px] px-0">إلغاء</Button>
+            <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !form.full_name || !form.email || !editingUser && !form.password}>
               {saveMutation.isPending ? "جاري الحفظ..." : "حفظ"}
             </Button>
           </DialogFooter>
@@ -261,7 +253,7 @@ export default function UsersPage() {
       </Dialog>
 
       {/* Deactivate Confirmation */}
-      <AlertDialog open={!!deactivateId} onOpenChange={(o) => { if (!o) setDeactivateId(null); }}>
+      <AlertDialog open={!!deactivateId} onOpenChange={(o) => {if (!o) setDeactivateId(null);}}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>تعطيل المستخدم</AlertDialogTitle>
@@ -273,6 +265,6 @@ export default function UsersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </DashboardLayout>
-  );
+    </DashboardLayout>);
+
 }
