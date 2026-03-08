@@ -191,6 +191,7 @@ export default function InvoicesPage() {
       setPayOpen(false); setPayInvoice(null);
       setPayAmount(""); setPayRef(""); setPayNotes("");
       toast.success("تم تسجيل الدفعة");
+      logActivity({ actionType: "create", module: "invoices", description: "تسجيل دفعة على فاتورة", details: { invoice_id: payInvoice?.id } });
     },
     onError: () => toast.error("حدث خطأ"),
   });

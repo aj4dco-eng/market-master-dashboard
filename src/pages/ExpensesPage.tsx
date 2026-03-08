@@ -142,6 +142,7 @@ export default function ExpensesPage() {
       queryClient.invalidateQueries({ queryKey: ["expenses-year-chart"] });
       setDialogOpen(false); resetForm();
       toast.success("تم إضافة المصروف");
+      logActivity({ actionType: "create", module: "expenses", description: `إضافة مصروف: ${description}`, details: { category, amount } });
     },
     onError: () => toast.error("حدث خطأ"),
   });

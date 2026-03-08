@@ -94,9 +94,10 @@ export default function SuppliersPage() {
         .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });
       toast({ title: "تم تعطيل المورد بنجاح" });
+      logActivity({ actionType: "delete", module: "suppliers", description: "تعطيل مورد", details: { supplier_id: id } });
     },
   });
 

@@ -142,10 +142,11 @@ export default function UsersPage() {
       const { error } = await supabase.from("profiles").update({ is_active: false }).eq("id", userId);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, userId) => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       setDeactivateId(null);
       toast.success("تم تعطيل المستخدم");
+      logActivity({ actionType: "delete", module: "users", description: "تعطيل مستخدم", details: { user_id: userId } });
     },
     onError: () => toast.error("حدث خطأ")
   });

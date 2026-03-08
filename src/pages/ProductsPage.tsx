@@ -105,10 +105,11 @@ export default function ProductsPage() {
       const { error } = await supabase.from("products").update({ is_active: false }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast({ title: "تم تعطيل المنتج بنجاح" });
       setDeactivateId(null);
+      logActivity({ actionType: "delete", module: "products", description: "تعطيل منتج", details: { product_id: id } });
     },
   });
 

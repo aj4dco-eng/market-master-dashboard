@@ -129,11 +129,12 @@ export default function SalesPage() {
         }).eq("id", item.product_id);
       }
     },
-    onSuccess: () => {
+    onSuccess: (_data, saleId) => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
       queryClient.invalidateQueries({ queryKey: ["pos-products"] });
       setCancelId(null);
       toast.success("تم إلغاء البيع واستعادة المخزون");
+      logActivity({ actionType: "delete", module: "sales", description: "إلغاء عملية بيع", details: { sale_id: saleId } });
     },
     onError: () => toast.error("حدث خطأ"),
   });

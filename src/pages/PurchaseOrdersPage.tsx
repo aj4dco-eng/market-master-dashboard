@@ -109,9 +109,10 @@ export default function PurchaseOrdersPage() {
         .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
       toast({ title: "تم إلغاء الطلبية" });
+      logActivity({ actionType: "delete", module: "orders", description: "إلغاء طلبية", details: { order_id: id } });
     },
   });
 
