@@ -443,34 +443,34 @@ function OrdersImportTab({ toast }: { toast: any }) {
       const { data: orderNum } = await supabase.rpc("generate_order_number");
       const totalAmount = g.items.reduce((s, it) => s + it.qty * it.unitPrice, 0);
 
-      const { data: order } = await (supabase.from("purchase_orders" as any)).insert({
+      const { data: order } = await supabase.from("purchase_orders").insert({
         order_number: orderNum,
-        supplier_id: sup.id,
+        supplier_id: (sup as any).id,
         order_date: g.date,
         status: "received",
         total_amount: totalAmount,
-      }).select().single();
+      } as any).select().single();
 
       if (!order) continue;
 
       for (const item of g.items) {
         const prod = (products || []).find((p: any) => p.name?.trim().toLowerCase() === item.product.toLowerCase());
-        await (supabase.from("purchase_order_items" as any)).insert({
-          order_id: order.id,
-          product_id: prod?.id || null,
+        await supabase.from("purchase_order_items").insert({
+          order_id: (order as any).id,
+          product_id: (prod as any)?.id || null,
           product_name: item.product,
           requested_qty: item.qty,
           received_qty: item.qty,
           actual_purchase_price: item.unitPrice,
           requested_purchase_price: item.unitPrice,
-        });
+        } as any);
 
         // Update product stock
         if (prod) {
-          const { data: current } = await (supabase.from("products" as any)).select("current_stock").eq("id", prod.id).single();
-          await (supabase.from("products" as any)).update({
-            current_stock: (current?.current_stock || 0) + item.qty,
-          }).eq("id", prod.id);
+          const { data: current } = await supabase.from("products").select("current_stock").eq("id", (prod as any).id).single();
+          await supabase.from("products").update({
+            current_stock: ((current as any)?.current_stock || 0) + item.qty,
+          } as any).eq("id", (prod as any).id);
         }
       }
       created++;
@@ -492,7 +492,7 @@ function OrdersImportTab({ toast }: { toast: any }) {
           onClick={() =>
             downloadTemplate("قالب_الطلبيات.xlsx", [
               ["اسم المورد", "الصنف", "الكمية", "سعر الشراء", "التاريخ"],
-              ["مورد 1", "حليب", 50, 4, "2026-03-01"],
+              ["مورد 1", "حليب", "50", "4", "2026-03-01"],
             ])
           }
         >
