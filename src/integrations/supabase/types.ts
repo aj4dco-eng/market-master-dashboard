@@ -529,6 +529,30 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          action: string
+          allowed: boolean
+          id: string
+          module: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          action: string
+          allowed?: boolean
+          id?: string
+          module: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          action?: string
+          allowed?: boolean
+          id?: string
+          module?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
       sale_items: {
         Row: {
           barcode: string | null
@@ -768,6 +792,38 @@ export type Database = {
         }
         Relationships: []
       }
+      user_permission_overrides: {
+        Row: {
+          action: string
+          allowed: boolean
+          id: string
+          module: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          allowed?: boolean
+          id?: string
+          module: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          allowed?: boolean
+          id?: string
+          module?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_permission_overrides_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -791,6 +847,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_permission: {
+        Args: { _action: string; _module: string; _user_id: string }
+        Returns: boolean
+      }
       generate_expense_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
       generate_order_number: { Args: never; Returns: string }
