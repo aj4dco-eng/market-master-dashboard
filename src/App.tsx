@@ -29,6 +29,7 @@ const POSPage = lazy(() => import("./pages/POSPage"));
 const SalesPage = lazy(() => import("./pages/SalesPage"));
 const PermissionsPage = lazy(() => import("./pages/PermissionsPage"));
 const ImportPage = lazy(() => import("./pages/ImportPage"));
+const UserActivityPage = lazy(() => import("./pages/UserActivityPage"));
 
 const PageLoader = () => (
   <div className="flex-1 p-6 space-y-4 animate-pulse">
@@ -70,6 +71,7 @@ const App = () => (
               <Route path="/pos" element={<ProtectedRoute allowedRoles={["admin", "employee"]}><POSPage /></ProtectedRoute>} />
               <Route path="/sales" element={<ProtectedRoute allowedRoles={["admin", "accountant", "employee"]}><SalesPage /></ProtectedRoute>} />
               <Route path="/import" element={<ProtectedRoute allowedRoles={["admin"]}><ImportPage /></ProtectedRoute>} />
+              <Route path="/users/activity" element={<ProtectedRoute allowedRoles={["admin"]}><UserActivityPage /></ProtectedRoute>} />
               <Route path="/" element={<Navigate to="/login" replace />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

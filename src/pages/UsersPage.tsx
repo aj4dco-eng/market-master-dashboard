@@ -15,7 +15,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Plus, UserCog, UserX } from "lucide-react";
+import { Plus, UserCog, UserX, Activity } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 type UserProfile = {
   id: string;
@@ -41,6 +42,7 @@ const roleBadgeVariant: Record<string, "default" | "secondary" | "outline"> = { 
 
 export default function UsersPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
@@ -155,7 +157,12 @@ export default function UsersPage() {
             <h1 className="text-2xl font-bold">إدارة المستخدمين</h1>
             <Badge variant="secondary">{users?.length ?? 0}</Badge>
           </div>
-          <Button onClick={openAdd}><Plus className="ml-2 h-4 w-4" />إضافة مستخدم</Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/users/activity")}>
+              <Activity className="ml-2 h-4 w-4" />سجل الحركات
+            </Button>
+            <Button onClick={openAdd}><Plus className="ml-2 h-4 w-4" />إضافة مستخدم</Button>
+          </div>
         </div>
 
         <Card>
