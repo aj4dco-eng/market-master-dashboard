@@ -17,6 +17,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { toast } from "sonner";
 import { Plus, Search, FileText, AlertTriangle, CreditCard, Eye } from "lucide-react";
 
@@ -49,6 +50,7 @@ const paymentMethodLabel: Record<string, string> = {
 export default function InvoicesPage() {
   const { user } = useAuth();
   const perm = usePermissions();
+  const { logActivity } = useActivityLog();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState("all");
   const [search, setSearch] = useState("");
@@ -163,6 +165,7 @@ export default function InvoicesPage() {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
       setNewOpen(false); resetNewForm();
       toast.success("تم إنشاء الفاتورة");
+      logActivity({ actionType: "create", module: "invoices", description: "إنشاء فاتورة جديدة" });
     },
     onError: () => toast.error("حدث خطأ"),
   });
@@ -189,6 +192,7 @@ export default function InvoicesPage() {
       setPayOpen(false); setPayInvoice(null);
       setPayAmount(""); setPayRef(""); setPayNotes("");
       toast.success("تم تسجيل الدفعة");
+      logActivity({ actionType: "create", module: "invoices", description: "تسجيل دفعة على فاتورة", details: { invoice_id: payInvoice?.id } });
     },
     onError: () => toast.error("حدث خطأ"),
   });

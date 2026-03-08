@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -48,6 +49,7 @@ interface SupplierFormData {
 export function SupplierDialog({ open, onOpenChange, supplier }: SupplierDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { logActivity } = useActivityLog();
   const isEdit = !!supplier;
 
   const { register, handleSubmit, reset, setValue, watch } = useForm<SupplierFormData>({
@@ -145,6 +147,7 @@ export function SupplierDialog({ open, onOpenChange, supplier }: SupplierDialogP
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });
       toast({ title: isEdit ? "تم تحديث المورد بنجاح" : "تم إضافة المورد بنجاح" });
       onOpenChange(false);
+      logActivity({ actionType: isEdit ? "update" : "create", module: "suppliers", description: isEdit ? "تعديل مورد" : "إضافة مورد جديد" });
     },
     onError: (error) => {
       toast({ title: "خطأ", description: error.message, variant: "destructive" });

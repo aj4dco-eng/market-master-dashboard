@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,7 @@ export interface Product {
 export default function ProductsPage() {
   const { role } = useAuth();
   const perm = usePermissions();
+  const { logActivity } = useActivityLog();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -104,10 +106,11 @@ export default function ProductsPage() {
       const { error } = await supabase.from("products").update({ is_active: false }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast({ title: "تم تعطيل المنتج بنجاح" });
       setDeactivateId(null);
+      logActivity({ actionType: "delete", module: "products", description: "تعطيل منتج", details: { product_id: id } });
     },
   });
 

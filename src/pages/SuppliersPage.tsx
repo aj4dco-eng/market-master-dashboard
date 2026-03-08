@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +66,7 @@ function RatingStars({ rating }: { rating: number | null }) {
 export default function SuppliersPage() {
   const { role } = useAuth();
   const { canCreate, canEdit, canDelete } = usePermissions();
+  const { logActivity } = useActivityLog();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -93,9 +95,10 @@ export default function SuppliersPage() {
         .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });
       toast({ title: "تم تعطيل المورد بنجاح" });
+      logActivity({ actionType: "delete", module: "suppliers", description: "تعطيل مورد", details: { supplier_id: id } });
     },
   });
 

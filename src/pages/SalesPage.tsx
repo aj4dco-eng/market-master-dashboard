@@ -14,6 +14,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { ShoppingCart, Receipt, Eye, XCircle, Printer } from "lucide-react";
@@ -26,6 +27,7 @@ const statusLabel: Record<string, string> = { completed: "مكتملة", cancell
 export default function SalesPage() {
   const { user, role } = useAuth();
   const perm = usePermissions();
+  const { logActivity } = useActivityLog();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const now = new Date();
@@ -128,11 +130,12 @@ export default function SalesPage() {
         }).eq("id", item.product_id);
       }
     },
-    onSuccess: () => {
+    onSuccess: (_data, saleId) => {
       queryClient.invalidateQueries({ queryKey: ["sales"] });
       queryClient.invalidateQueries({ queryKey: ["pos-products"] });
       setCancelId(null);
       toast.success("تم إلغاء البيع واستعادة المخزون");
+      logActivity({ actionType: "delete", module: "sales", description: "إلغاء عملية بيع", details: { sale_id: saleId } });
     },
     onError: () => toast.error("حدث خطأ"),
   });

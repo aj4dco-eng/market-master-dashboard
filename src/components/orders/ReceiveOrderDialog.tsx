@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ interface ReceiveItem extends PurchaseOrderItem {
 export function ReceiveOrderDialog({ orderId, open, onOpenChange, readOnly = false }: ReceiveOrderDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { logActivity } = useActivityLog();
   const [receiveItems, setReceiveItems] = useState<ReceiveItem[]>([]);
 
   const { data: order, isLoading: orderLoading } = useQuery({
@@ -127,6 +129,7 @@ export function ReceiveOrderDialog({ orderId, open, onOpenChange, readOnly = fal
       queryClient.invalidateQueries({ queryKey: ["order-item-counts"] });
       onOpenChange(false);
       toast({ title: "تم استلام الطلبية بنجاح" });
+      logActivity({ actionType: "update", module: "orders", description: "استلام طلبية شراء", details: { order_id: orderId } });
     },
     onError: (err: any) => {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });

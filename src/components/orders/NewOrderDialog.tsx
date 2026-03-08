@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -30,6 +31,7 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { logActivity } = useActivityLog();
   const [supplierId, setSupplierId] = useState("");
   const [expectedDate, setExpectedDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -183,6 +185,7 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
         title: "تم إنشاء الطلبية",
         description: status === "awaiting_approval" ? "الطلبية تحتاج موافقة المدير (تجاوزت حد الطلبية)" : undefined,
       });
+      logActivity({ actionType: "create", module: "orders", description: "إنشاء طلبية شراء جديدة" });
     },
     onError: (err: any) => {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });

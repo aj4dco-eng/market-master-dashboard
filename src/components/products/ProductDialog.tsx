@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,6 +26,7 @@ const UNITS = ["قطعة", "كرتون", "كيلو", "لتر"];
 export function ProductDialog({ open, onOpenChange, product, categories, suppliers }: ProductDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { logActivity } = useActivityLog();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [scanning, setScanning] = useState(false);
   const scannerRef = useRef<any>(null);
@@ -185,6 +187,7 @@ export function ProductDialog({ open, onOpenChange, product, categories, supplie
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       onOpenChange(false);
       toast({ title: product ? "تم تحديث المنتج" : "تم إضافة المنتج" });
+      logActivity({ actionType: product ? "update" : "create", module: "products", description: product ? `تعديل منتج: ${form.name}` : `إضافة منتج: ${form.name}` });
     },
     onError: (err: any) => {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });

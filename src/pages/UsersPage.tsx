@@ -15,6 +15,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { Plus, UserCog, UserX, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -43,6 +44,7 @@ const roleBadgeVariant: Record<string, "default" | "secondary" | "outline"> = { 
 export default function UsersPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { logActivity } = useActivityLog();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
@@ -132,6 +134,7 @@ export default function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       setDialogOpen(false);
       toast.success(editingUser ? "تم تحديث المستخدم" : "تم إضافة المستخدم");
+      logActivity({ actionType: editingUser ? "update" : "create", module: "users", description: editingUser ? `تعديل مستخدم: ${form.full_name}` : `إضافة مستخدم: ${form.email}` });
     },
     onError: (e: any) => toast.error(e.message || "حدث خطأ")
   });
@@ -141,10 +144,11 @@ export default function UsersPage() {
       const { error } = await supabase.from("profiles").update({ is_active: false }).eq("id", userId);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, userId) => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       setDeactivateId(null);
       toast.success("تم تعطيل المستخدم");
+      logActivity({ actionType: "delete", module: "users", description: "تعطيل مستخدم", details: { user_id: userId } });
     },
     onError: () => toast.error("حدث خطأ")
   });

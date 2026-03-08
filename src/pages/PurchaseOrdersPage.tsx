@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +67,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function PurchaseOrdersPage() {
   const { role } = useAuth();
   const perm = usePermissions();
+  const { logActivity } = useActivityLog();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -109,9 +111,10 @@ export default function PurchaseOrdersPage() {
         .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
       toast({ title: "تم إلغاء الطلبية" });
+      logActivity({ actionType: "delete", module: "orders", description: "إلغاء طلبية", details: { order_id: id } });
     },
   });
 

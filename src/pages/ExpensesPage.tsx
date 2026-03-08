@@ -14,6 +14,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { toast } from "sonner";
 import { Plus, Receipt } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -33,6 +34,7 @@ type Expense = {
 export default function ExpensesPage() {
   const { user } = useAuth();
   const perm = usePermissions();
+  const { logActivity } = useActivityLog();
   const queryClient = useQueryClient();
   const now = new Date();
 
@@ -141,6 +143,7 @@ export default function ExpensesPage() {
       queryClient.invalidateQueries({ queryKey: ["expenses-year-chart"] });
       setDialogOpen(false); resetForm();
       toast.success("تم إضافة المصروف");
+      logActivity({ actionType: "create", module: "expenses", description: `إضافة مصروف: ${description}`, details: { category, amount } });
     },
     onError: () => toast.error("حدث خطأ"),
   });

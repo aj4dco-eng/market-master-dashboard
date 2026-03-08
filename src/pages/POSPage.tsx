@@ -12,6 +12,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useActivityLog } from "@/hooks/useActivityLog";
 import { Search, Camera, Package, X, ShoppingBasket, Printer, Check, Trash2, Minus, Plus, Keyboard, HelpCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -32,6 +33,7 @@ type CartItem = {
 
 export default function POSPage() {
   const { user } = useAuth();
+  const { logActivity } = useActivityLog();
   const queryClient = useQueryClient();
   const searchRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
@@ -237,6 +239,7 @@ export default function POSPage() {
       setPaymentMethod("cash");
       queryClient.invalidateQueries({ queryKey: ["pos-products"] });
       toast.success(`تم البيع بنجاح - رقم: ${saleNum}`);
+      logActivity({ actionType: "create", module: "pos", description: `عملية بيع من نقطة البيع: ${saleNum}`, details: { sale_number: saleNum, total: sale.total_amount } });
     },
     onError: () => toast.error("حدث خطأ أثناء إتمام البيع"),
   });
