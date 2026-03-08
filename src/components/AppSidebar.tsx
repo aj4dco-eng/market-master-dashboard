@@ -15,6 +15,7 @@ import {
   BarChart3,
   Shield,
   Upload,
+  Tags,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth, AppRole } from "@/contexts/AuthContext";
