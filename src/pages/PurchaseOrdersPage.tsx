@@ -170,6 +170,7 @@ export default function PurchaseOrdersPage() {
             <TabsTrigger value="all">الكل</TabsTrigger>
             <TabsTrigger value="pending">معلقة</TabsTrigger>
             <TabsTrigger value="awaiting_approval">بانتظار الموافقة</TabsTrigger>
+            <TabsTrigger value="approved">تمت الموافقة</TabsTrigger>
             <TabsTrigger value="received">مستلمة</TabsTrigger>
             <TabsTrigger value="partial">جزئية</TabsTrigger>
             <TabsTrigger value="cancelled">ملغاة</TabsTrigger>
