@@ -15,7 +15,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Plus, UserCog, UserX } from "lucide-react";
+import { Plus, UserCog, UserX, Activity } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 type UserProfile = {
   id: string;
