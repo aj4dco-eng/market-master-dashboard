@@ -57,6 +57,14 @@ export default function AdminDashboard() {
     },
   });
 
+  const { data: awaitingApproval, isLoading: l6 } = useQuery({
+    queryKey: ["admin-awaiting-approval"],
+    queryFn: async () => {
+      const { count } = await supabase.from("purchase_orders").select("*", { count: "exact", head: true }).eq("status", "awaiting_approval");
+      return count ?? 0;
+    },
+  });
+
   const { data: todaySales } = useQuery({
     queryKey: ["admin-today-sales"],
     queryFn: async () => {
