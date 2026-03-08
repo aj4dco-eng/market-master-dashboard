@@ -146,7 +146,7 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-bold">لوحة تحكم المدير</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
-            <Card key={stat.title} className="hover:shadow-md transition-shadow">
+            <Card key={stat.title} className={`hover:shadow-md transition-shadow ${stat.link ? "cursor-pointer" : ""}`} onClick={() => stat.link && navigate(stat.link)}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
                 <stat.icon className={`h-5 w-5 ${stat.color}`} />
