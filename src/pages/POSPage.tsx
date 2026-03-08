@@ -238,6 +238,7 @@ export default function POSPage() {
       setPaymentMethod("cash");
       queryClient.invalidateQueries({ queryKey: ["pos-products"] });
       toast.success(`تم البيع بنجاح - رقم: ${saleNum}`);
+      logActivity({ actionType: "create", module: "pos", description: `عملية بيع من نقطة البيع: ${saleNum}`, details: { sale_number: saleNum, total: sale.total_amount } });
     },
     onError: () => toast.error("حدث خطأ أثناء إتمام البيع"),
   });
