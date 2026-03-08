@@ -33,6 +33,7 @@ type CartItem = {
 
 export default function POSPage() {
   const { user } = useAuth();
+  const { logActivity } = useActivityLog();
   const queryClient = useQueryClient();
   const searchRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
