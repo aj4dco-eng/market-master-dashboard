@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShoppingCart, TrendingUp, Warehouse, Clock } from "lucide-react";
+import { ShoppingCart, TrendingUp, Warehouse, Clock, FileText, Receipt } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,6 +37,24 @@ export default function AccountantDashboard() {
     queryFn: async () => {
       const { count } = await supabase.from("purchase_orders").select("*", { count: "exact", head: true }).eq("status", "awaiting_approval");
       return count ?? 0;
+    },
+  });
+
+  const { data: unpaidInvoices } = useQuery({
+    queryKey: ["acc-unpaid-invoices"],
+    queryFn: async () => {
+      const { data } = await supabase.from("invoices" as any).select("total_amount, paid_amount, status");
+      const list = (data ?? []) as any[];
+      return list.filter((i: any) => i.status === "unpaid" || i.status === "overdue").reduce((s: number, i: any) => s + ((i.total_amount ?? 0) - (i.paid_amount ?? 0)), 0);
+    },
+  });
+
+  const { data: monthlyExpenses } = useQuery({
+    queryKey: ["acc-monthly-expenses"],
+    queryFn: async () => {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+      const { data } = await supabase.from("expenses" as any).select("amount").gte("expense_date", startOfMonth);
+      return ((data ?? []) as any[]).reduce((s: number, e: any) => s + (e.amount ?? 0), 0);
     },
   });
 
@@ -76,6 +94,8 @@ export default function AccountantDashboard() {
     { title: "مشتريات هذا العام", value: formatCurrency(yearlyPurchases), icon: TrendingUp, color: "text-accent" },
     { title: "قيمة المخزون الحالية", value: formatCurrency(stockValue), icon: Warehouse, color: "text-warning" },
     { title: "بانتظار الموافقة", value: awaitingCount?.toLocaleString("en-US") ?? "0", icon: Clock, color: "text-destructive" },
+    { title: "فواتير غير مدفوعة", value: formatCurrency(unpaidInvoices ?? 0), icon: FileText, color: "text-destructive" },
+    { title: "مصروفات هذا الشهر", value: formatCurrency(monthlyExpenses ?? 0), icon: Receipt, color: "text-warning" },
   ];
 
   return (
