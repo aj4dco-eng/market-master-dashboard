@@ -1,6 +1,6 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Truck, ShoppingCart, Warehouse, AlertTriangle, Clock, Receipt, ReceiptText } from "lucide-react";
+import { Package, Truck, ShoppingCart, Warehouse, AlertTriangle, Clock, Receipt, ReceiptText, ShieldCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,6 +53,14 @@ export default function AdminDashboard() {
     queryKey: ["admin-pending-orders"],
     queryFn: async () => {
       const { count } = await supabase.from("purchase_orders").select("*", { count: "exact", head: true }).in("status", ["pending", "awaiting_approval"]);
+      return count ?? 0;
+    },
+  });
+
+  const { data: awaitingApproval, isLoading: l6 } = useQuery({
+    queryKey: ["admin-awaiting-approval"],
+    queryFn: async () => {
+      const { count } = await supabase.from("purchase_orders").select("*", { count: "exact", head: true }).eq("status", "awaiting_approval");
       return count ?? 0;
     },
   });
@@ -116,7 +124,7 @@ export default function AdminDashboard() {
     });
   }, [chartOrders, chartSales]);
 
-  const isLoading = l1 || l2 || l3 || l4 || l5;
+  const isLoading = l1 || l2 || l3 || l4 || l5 || l6;
 
   const stats = [
     { title: "إجمالي المنتجات", value: productCount?.toLocaleString("en-US") ?? "0", icon: Package, color: "text-primary" },
@@ -125,6 +133,7 @@ export default function AdminDashboard() {
     { title: "قيمة المخزون الإجمالية", value: formatCurrency(stockValue), icon: Warehouse, color: "text-primary" },
     { title: "منتجات تحت الحد الأدنى", value: lowStockCount.toLocaleString("en-US"), icon: AlertTriangle, color: lowStockCount > 0 ? "text-destructive" : "text-muted-foreground" },
     { title: "طلبيات معلقة", value: pendingOrders?.toLocaleString("en-US") ?? "0", icon: Clock, color: "text-warning" },
+    { title: "بانتظار الموافقة", value: (awaitingApproval ?? 0).toLocaleString("en-US"), icon: ShieldCheck, color: (awaitingApproval ?? 0) > 0 ? "text-destructive" : "text-muted-foreground" },
     { title: "مبيعات اليوم", value: formatCurrency(todaySales?.total ?? 0), icon: Receipt, color: "text-accent" },
     { title: "عدد فواتير اليوم", value: (todaySales?.count ?? 0).toLocaleString("en-US"), icon: ReceiptText, color: "text-primary" },
   ];

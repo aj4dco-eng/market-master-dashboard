@@ -64,6 +64,19 @@ export function AppSidebar() {
     },
   });
 
+  const { data: awaitingApprovalCount } = useQuery({
+    queryKey: ["orders-awaiting-approval-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("purchase_orders")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "awaiting_approval");
+      if (error) return 0;
+      return count ?? 0;
+    },
+    enabled: role === "admin",
+  });
+
   const menuItems: MenuItem[] = [
     { title: "لوحة التحكم", url: "/dashboard/admin", icon: LayoutDashboard, roles: ["admin"] },
     { title: "لوحة التحكم", url: "/dashboard/accountant", icon: LayoutDashboard, roles: ["accountant"] },
@@ -72,7 +85,7 @@ export function AppSidebar() {
     { title: "الموردون", url: "/suppliers", icon: Truck, roles: ["admin", "accountant", "employee"], permModule: "suppliers", badge: supplierCount },
     { title: "المنتجات", url: "/products", icon: Package, roles: ["admin", "employee", "accountant"], permModule: "products" },
     { title: "الأصناف", url: "/categories", icon: Tags, roles: ["admin", "employee", "accountant"], permModule: "categories" },
-    { title: "الطلبيات", url: "/orders", icon: ClipboardList, roles: ["admin", "accountant", "employee"], permModule: "orders" },
+    { title: "الطلبيات", url: "/orders", icon: ClipboardList, roles: ["admin", "accountant", "employee"], permModule: "orders", badge: role === "admin" ? awaitingApprovalCount : undefined },
     { title: "الجرد", url: "/inventory", icon: ClipboardCheck, roles: ["admin", "accountant", "employee"], permModule: "inventory" },
     { title: "التقارير", url: "/reports", icon: BarChart3, roles: ["admin", "accountant"], permModule: "reports" },
     { title: "نقطة البيع", url: "/pos", icon: ShoppingCart, roles: ["admin", "employee"], permModule: "pos" },
