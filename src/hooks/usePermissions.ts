@@ -5,13 +5,15 @@ import { useAuth } from "@/contexts/AuthContext";
 export type PermissionModule = 
   | "suppliers" | "products" | "orders" | "inventory" 
   | "sales" | "pos" | "invoices" | "expenses" 
-  | "reports" | "users" | "settings" | "permissions";
+  | "reports" | "users" | "settings" | "permissions"
+  | "import" | "dashboard";
 
 export type PermissionAction = 
   | "view" | "create" | "edit" | "delete" 
   | "edit_prices" | "cancel" | "use" | "export";
 
 export const MODULE_LABELS: Record<PermissionModule, string> = {
+  dashboard: "لوحة التحكم",
   suppliers: "الموردون",
   products: "المنتجات",
   orders: "الطلبيات",
@@ -22,6 +24,7 @@ export const MODULE_LABELS: Record<PermissionModule, string> = {
   expenses: "المصروفات",
   reports: "التقارير",
   users: "المستخدمون",
+  import: "استيراد البيانات",
   settings: "الإعدادات",
   permissions: "الصلاحيات",
 };
@@ -38,16 +41,18 @@ export const ACTION_LABELS: Record<PermissionAction, string> = {
 };
 
 export const MODULE_ACTIONS: Record<PermissionModule, PermissionAction[]> = {
-  suppliers: ["view", "create", "edit", "delete"],
-  products: ["view", "create", "edit", "delete", "edit_prices"],
-  orders: ["view", "create", "edit", "delete"],
-  inventory: ["view", "create", "edit"],
-  sales: ["view", "cancel"],
+  dashboard: ["view"],
+  suppliers: ["view", "create", "edit", "delete", "export"],
+  products: ["view", "create", "edit", "delete", "edit_prices", "export"],
+  orders: ["view", "create", "edit", "delete", "export"],
+  inventory: ["view", "create", "edit", "delete", "export"],
+  sales: ["view", "create", "edit", "cancel", "export"],
   pos: ["view", "use"],
-  invoices: ["view", "create", "edit", "delete"],
-  expenses: ["view", "create", "edit", "delete"],
+  invoices: ["view", "create", "edit", "delete", "export"],
+  expenses: ["view", "create", "edit", "delete", "export"],
   reports: ["view", "export"],
   users: ["view", "create", "edit", "delete"],
+  import: ["view", "use"],
   settings: ["view", "edit"],
   permissions: ["view", "edit"],
 };
