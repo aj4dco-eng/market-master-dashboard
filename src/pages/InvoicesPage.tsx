@@ -48,6 +48,7 @@ const paymentMethodLabel: Record<string, string> = {
 
 export default function InvoicesPage() {
   const { user } = useAuth();
+  const perm = usePermissions();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState("all");
   const [search, setSearch] = useState("");

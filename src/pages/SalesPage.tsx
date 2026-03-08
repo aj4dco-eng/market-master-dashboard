@@ -25,6 +25,7 @@ const statusLabel: Record<string, string> = { completed: "مكتملة", cancell
 
 export default function SalesPage() {
   const { user, role } = useAuth();
+  const perm = usePermissions();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const now = new Date();
