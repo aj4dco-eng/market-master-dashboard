@@ -73,8 +73,9 @@ export default function PurchaseOrdersPage() {
   const { logActivity } = useActivityLog();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
-  const [statusTab, setStatusTab] = useState("all");
+  const [statusTab, setStatusTab] = useState(searchParams.get("status") || "all");
   const [newOrderOpen, setNewOrderOpen] = useState(false);
   const [receiveOrderId, setReceiveOrderId] = useState<string | null>(null);
   const [viewOrderId, setViewOrderId] = useState<string | null>(null);
