@@ -164,6 +164,7 @@ export default function InvoicesPage() {
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
       setNewOpen(false); resetNewForm();
       toast.success("تم إنشاء الفاتورة");
+      logActivity({ actionType: "create", module: "invoices", description: "إنشاء فاتورة جديدة" });
     },
     onError: () => toast.error("حدث خطأ"),
   });
