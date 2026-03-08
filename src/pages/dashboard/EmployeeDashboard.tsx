@@ -1,16 +1,19 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Package, AlertTriangle, ShoppingCart, CheckCircle } from "lucide-react";
+import { Package, AlertTriangle, ShoppingCart, CheckCircle, Receipt, ReceiptText } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMemo } from "react";
 
+const formatCurrency = (n: number) => `₪${n.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+
 export default function EmployeeDashboard() {
   const { user } = useAuth();
   const now = new Date();
+  const today = now.toISOString().split("T")[0];
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
 
   const { data: products, isLoading: l1 } = useQuery({
@@ -39,6 +42,24 @@ export default function EmployeeDashboard() {
     },
   });
 
+  const { data: mySalesToday } = useQuery({
+    queryKey: ["emp-my-sales-today"],
+    queryFn: async () => {
+      if (!user) return { total: 0, count: 0 };
+      const { data } = await (supabase.from("sales" as any) as any)
+        .select("total_amount, status")
+        .eq("cashier_id", user.id)
+        .gte("created_at", `${today}T00:00:00`)
+        .lte("created_at", `${today}T23:59:59`);
+      const completed = ((data ?? []) as any[]).filter((s: any) => s.status === "completed");
+      return {
+        total: completed.reduce((s: number, sale: any) => s + (sale.total_amount ?? 0), 0),
+        count: completed.length,
+      };
+    },
+    enabled: !!user,
+  });
+
   const activeCount = products?.length ?? 0;
   const lowStockProducts = useMemo(() => {
     if (!products) return [];
@@ -59,13 +80,15 @@ export default function EmployeeDashboard() {
     { title: "منتجات منخفضة المخزون", value: lowStockProducts.length.toLocaleString("en-US"), icon: AlertTriangle, color: lowStockProducts.length > 0 ? "text-destructive" : "text-muted-foreground" },
     { title: "طلبياتي هذا الشهر", value: myOrdersCount?.toLocaleString("en-US") ?? "0", icon: ShoppingCart, color: "text-warning" },
     { title: "طلبيات مستلمة هذا الشهر", value: receivedCount?.toLocaleString("en-US") ?? "0", icon: CheckCircle, color: "text-accent" },
+    { title: "مبيعاتي اليوم", value: formatCurrency(mySalesToday?.total ?? 0), icon: Receipt, color: "text-accent" },
+    { title: "عدد فواتيري اليوم", value: (mySalesToday?.count ?? 0).toLocaleString("en-US"), icon: ReceiptText, color: "text-primary" },
   ];
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">لوحة تحكم الموظف</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {stats.map((stat) => (
             <Card key={stat.title} className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between pb-2">

@@ -1,10 +1,10 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Truck, ShoppingCart, Warehouse, AlertTriangle, Clock } from "lucide-react";
+import { Package, Truck, ShoppingCart, Warehouse, AlertTriangle, Clock, Receipt, ReceiptText } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useMemo } from "react";
 
 const formatCurrency = (n: number) => `₪${n.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
@@ -14,6 +14,7 @@ const ARABIC_MONTHS = ["يناير", "فبراير", "مارس", "أبريل", "
 export default function AdminDashboard() {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const today = now.toISOString().split("T")[0];
   const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString();
 
   const { data: productCount, isLoading: l1 } = useQuery({
@@ -56,11 +57,28 @@ export default function AdminDashboard() {
     },
   });
 
+  const { data: todaySales } = useQuery({
+    queryKey: ["admin-today-sales"],
+    queryFn: async () => {
+      const { data } = await (supabase.from("sales" as any) as any).select("total_amount, status").gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`);
+      const completed = ((data ?? []) as any[]).filter((s: any) => s.status === "completed");
+      return { total: completed.reduce((s: number, sale: any) => s + (sale.total_amount ?? 0), 0), count: completed.length };
+    },
+  });
+
   const { data: chartOrders } = useQuery({
     queryKey: ["admin-chart-orders"],
     queryFn: async () => {
       const { data } = await supabase.from("purchase_orders").select("created_at, total_amount").gte("created_at", sixMonthsAgo);
       return data ?? [];
+    },
+  });
+
+  const { data: chartSales } = useQuery({
+    queryKey: ["admin-chart-sales"],
+    queryFn: async () => {
+      const { data } = await (supabase.from("sales" as any) as any).select("created_at, total_amount, status").gte("created_at", sixMonthsAgo);
+      return ((data ?? []) as any[]).filter((s: any) => s.status === "completed");
     },
   });
 
@@ -75,24 +93,28 @@ export default function AdminDashboard() {
   }, [products]);
 
   const chartData = useMemo(() => {
-    if (!chartOrders) return [];
-    const grouped: Record<string, number> = {};
+    const grouped: Record<string, { purchases: number; sales: number }> = {};
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${d.getMonth()}`;
-      grouped[key] = 0;
+      grouped[`${d.getFullYear()}-${d.getMonth()}`] = { purchases: 0, sales: 0 };
     }
-    chartOrders.forEach(o => {
+    chartOrders?.forEach(o => {
       if (!o.created_at) return;
       const d = new Date(o.created_at);
       const key = `${d.getFullYear()}-${d.getMonth()}`;
-      if (key in grouped) grouped[key] += (o.total_amount ?? 0);
+      if (key in grouped) grouped[key].purchases += (o.total_amount ?? 0);
     });
-    return Object.entries(grouped).map(([key, total]) => {
+    chartSales?.forEach((s: any) => {
+      if (!s.created_at) return;
+      const d = new Date(s.created_at);
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      if (key in grouped) grouped[key].sales += (s.total_amount ?? 0);
+    });
+    return Object.entries(grouped).map(([key]) => {
       const [, month] = key.split("-");
-      return { name: ARABIC_MONTHS[parseInt(month)], total };
+      return { name: ARABIC_MONTHS[parseInt(month)], ...grouped[key] };
     });
-  }, [chartOrders]);
+  }, [chartOrders, chartSales]);
 
   const isLoading = l1 || l2 || l3 || l4 || l5;
 
@@ -103,13 +125,15 @@ export default function AdminDashboard() {
     { title: "قيمة المخزون الإجمالية", value: formatCurrency(stockValue), icon: Warehouse, color: "text-primary" },
     { title: "منتجات تحت الحد الأدنى", value: lowStockCount.toLocaleString("en-US"), icon: AlertTriangle, color: lowStockCount > 0 ? "text-destructive" : "text-muted-foreground" },
     { title: "طلبيات معلقة", value: pendingOrders?.toLocaleString("en-US") ?? "0", icon: Clock, color: "text-warning" },
+    { title: "مبيعات اليوم", value: formatCurrency(todaySales?.total ?? 0), icon: Receipt, color: "text-accent" },
+    { title: "عدد فواتير اليوم", value: (todaySales?.count ?? 0).toLocaleString("en-US"), icon: ReceiptText, color: "text-primary" },
   ];
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">لوحة تحكم المدير</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
             <Card key={stat.title} className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -125,7 +149,7 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">المشتريات خلال 6 أشهر</CardTitle>
+            <CardTitle className="text-lg">المشتريات والمبيعات خلال 6 أشهر</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]" dir="ltr">
@@ -135,7 +159,9 @@ export default function AdminDashboard() {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                  <Bar dataKey="total" fill="hsl(217, 91%, 50%)" radius={[4, 4, 0, 0]} />
+                  <Legend />
+                  <Bar dataKey="purchases" name="المشتريات" fill="hsl(217, 91%, 50%)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="sales" name="المبيعات" fill="hsl(151, 55%, 42%)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

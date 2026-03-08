@@ -18,6 +18,8 @@ import UsersPage from "./pages/UsersPage";
 import SettingsPage from "./pages/SettingsPage";
 import InvoicesPage from "./pages/InvoicesPage";
 import ExpensesPage from "./pages/ExpensesPage";
+import POSPage from "./pages/POSPage";
+import SalesPage from "./pages/SalesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +45,8 @@ const App = () => (
             <Route path="/settings" element={<ProtectedRoute allowedRoles={["admin"]}><SettingsPage /></ProtectedRoute>} />
             <Route path="/invoices" element={<ProtectedRoute allowedRoles={["admin", "accountant"]}><InvoicesPage /></ProtectedRoute>} />
             <Route path="/expenses" element={<ProtectedRoute allowedRoles={["admin", "accountant"]}><ExpensesPage /></ProtectedRoute>} />
+            <Route path="/pos" element={<ProtectedRoute allowedRoles={["admin", "employee"]}><POSPage /></ProtectedRoute>} />
+            <Route path="/sales" element={<ProtectedRoute allowedRoles={["admin", "accountant", "employee"]}><SalesPage /></ProtectedRoute>} />
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
