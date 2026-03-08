@@ -22,14 +22,12 @@ export default function SettingsPage() {
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">الإعدادات</h1>
         <Tabs defaultValue="store" dir="rtl">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="store">إعدادات المتجر</TabsTrigger>
             <TabsTrigger value="account">إعدادات الحساب</TabsTrigger>
-            <TabsTrigger value="categories">الأصناف</TabsTrigger>
           </TabsList>
           <TabsContent value="store"><StoreSettings /></TabsContent>
           <TabsContent value="account"><AccountSettings /></TabsContent>
-          <TabsContent value="categories"><CategoriesSettings /></TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
