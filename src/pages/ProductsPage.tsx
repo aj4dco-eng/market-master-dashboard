@@ -125,7 +125,7 @@ export default function ProductsPage() {
   });
 
   const lowStockProducts = products.filter(
-    (p) => p.is_active && p.current_stock <= p.min_stock_alert && p.min_stock_alert > 0
+    (p) => p.is_active && (p.current_stock ?? 0) <= (p.min_stock_alert ?? 0) && (p.min_stock_alert ?? 0) > 0
   );
 
   const getCategoryName = (id: string | null) => categories.find((c) => c.id === id)?.name || "—";
@@ -285,8 +285,8 @@ export default function ProductsPage() {
                         <span className="font-semibold">بيع: {formatCurrency(product.selling_price)}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className={`text-xs ${getStockColor(product.current_stock, product.min_stock_alert)}`}>
-                          مخزون: {product.current_stock.toLocaleString("en-US")}
+                        <span className={`text-xs ${getStockColor(product.current_stock ?? 0, product.min_stock_alert ?? 0)}`}>
+                          مخزون: {(product.current_stock ?? 0).toLocaleString("en-US")}
                         </span>
                         {canEdit && (
                           <Button
@@ -344,8 +344,8 @@ export default function ProductsPage() {
                       <TableCell dir="ltr" className="text-right">{formatCurrency(product.purchase_price)}</TableCell>
                       <TableCell dir="ltr" className="text-right font-semibold">{formatCurrency(product.selling_price)}</TableCell>
                       <TableCell>
-                        <span className={getStockColor(product.current_stock, product.min_stock_alert)}>
-                          {product.current_stock.toLocaleString("en-US")}
+                        <span className={getStockColor(product.current_stock ?? 0, product.min_stock_alert ?? 0)}>
+                          {(product.current_stock ?? 0).toLocaleString("en-US")}
                         </span>
                       </TableCell>
                       <TableCell>

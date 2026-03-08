@@ -128,6 +128,126 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_order_items: {
+        Row: {
+          actual_purchase_price: number | null
+          barcode: string | null
+          batch_number: string | null
+          expiry_date: string | null
+          id: string
+          notes: string | null
+          order_id: string
+          product_id: string | null
+          product_name: string | null
+          received_qty: number | null
+          requested_purchase_price: number | null
+          requested_qty: number
+          selling_price: number | null
+        }
+        Insert: {
+          actual_purchase_price?: number | null
+          barcode?: string | null
+          batch_number?: string | null
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          order_id: string
+          product_id?: string | null
+          product_name?: string | null
+          received_qty?: number | null
+          requested_purchase_price?: number | null
+          requested_qty?: number
+          selling_price?: number | null
+        }
+        Update: {
+          actual_purchase_price?: number | null
+          barcode?: string | null
+          batch_number?: string | null
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string
+          product_id?: string | null
+          product_name?: string | null
+          received_qty?: number | null
+          requested_purchase_price?: number | null
+          requested_qty?: number
+          selling_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          expected_date: string | null
+          id: string
+          notes: string | null
+          order_date: string | null
+          order_number: string
+          status: string | null
+          supplier_id: string
+          total_amount: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          order_date?: string | null
+          order_number: string
+          status?: string | null
+          supplier_id: string
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          order_date?: string | null
+          order_number?: string
+          status?: string | null
+          supplier_id?: string
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           address: string | null
@@ -277,6 +397,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_order_number: { Args: never; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

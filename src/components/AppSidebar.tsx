@@ -9,6 +9,7 @@ import {
   LogOut,
   Store,
   Truck,
+  ClipboardList,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth, AppRole } from "@/contexts/AuthContext";
@@ -60,7 +61,8 @@ export function AppSidebar() {
     { title: "لوحة التحكم", url: "/dashboard/employee", icon: LayoutDashboard, roles: ["employee"] },
     { title: "المستخدمون", url: "/users", icon: Users, roles: ["admin"] },
     { title: "الموردون", url: "/suppliers", icon: Truck, roles: ["admin", "accountant", "employee"], badge: supplierCount },
-    { title: "المنتجات", url: "/products", icon: Package, roles: ["admin", "employee"] },
+    { title: "المنتجات", url: "/products", icon: Package, roles: ["admin", "employee", "accountant"] },
+    { title: "الطلبيات", url: "/orders", icon: ClipboardList, roles: ["admin", "accountant", "employee"] },
     { title: "المبيعات", url: "/sales", icon: ShoppingCart, roles: ["admin", "accountant", "employee"] },
     { title: "الفواتير", url: "/invoices", icon: FileText, roles: ["admin", "accountant"] },
     { title: "المحاسبة", url: "/accounting", icon: Calculator, roles: ["admin", "accountant"] },
