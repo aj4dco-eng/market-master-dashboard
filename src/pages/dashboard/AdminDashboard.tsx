@@ -1,6 +1,6 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Truck, ShoppingCart, Warehouse, AlertTriangle, Clock, Receipt, ReceiptText } from "lucide-react";
+import { Package, Truck, ShoppingCart, Warehouse, AlertTriangle, Clock, Receipt, ReceiptText, ShieldCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
