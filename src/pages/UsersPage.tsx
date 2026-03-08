@@ -157,7 +157,12 @@ export default function UsersPage() {
             <h1 className="text-2xl font-bold">إدارة المستخدمين</h1>
             <Badge variant="secondary">{users?.length ?? 0}</Badge>
           </div>
-          <Button onClick={openAdd}><Plus className="ml-2 h-4 w-4" />إضافة مستخدم</Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/users/activity")}>
+              <Activity className="ml-2 h-4 w-4" />سجل الحركات
+            </Button>
+            <Button onClick={openAdd}><Plus className="ml-2 h-4 w-4" />إضافة مستخدم</Button>
+          </div>
         </div>
 
         <Card>
