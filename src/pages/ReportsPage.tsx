@@ -5,12 +5,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Download, Package, Warehouse, TrendingUp, Star } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from "recharts";
 
 const formatCurrency = (n: number) => `₪${n.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 
@@ -20,14 +21,16 @@ export default function ReportsPage() {
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">التقارير</h1>
         <Tabs defaultValue="inventory" dir="rtl">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="inventory">تقرير المخزون</TabsTrigger>
             <TabsTrigger value="purchases">تقرير المشتريات</TabsTrigger>
             <TabsTrigger value="suppliers">تقرير الموردين</TabsTrigger>
+            <TabsTrigger value="financial">التقرير المالي</TabsTrigger>
           </TabsList>
           <TabsContent value="inventory"><InventoryReport /></TabsContent>
           <TabsContent value="purchases"><PurchasesReport /></TabsContent>
           <TabsContent value="suppliers"><SuppliersReport /></TabsContent>
+          <TabsContent value="financial"><FinancialReport /></TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
