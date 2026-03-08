@@ -40,7 +40,7 @@ export default function PermissionsPage() {
     queryFn: async () => {
       const { data, error } = await supabase.from("role_permissions" as any).select("*");
       if (error) throw error;
-      return (data ?? []) as RolePerm[];
+      return (data ?? []) as unknown as RolePerm[];
     },
   });
 
@@ -61,7 +61,7 @@ export default function PermissionsPage() {
       if (!selectedUserId) return [];
       const { data, error } = await supabase.from("user_permission_overrides" as any).select("*").eq("user_id", selectedUserId);
       if (error) throw error;
-      return (data ?? []) as UserOverride[];
+      return (data ?? []) as unknown as UserOverride[];
     },
     enabled: !!selectedUserId,
   });
