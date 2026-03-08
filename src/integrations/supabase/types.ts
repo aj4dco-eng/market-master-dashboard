@@ -35,6 +35,56 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string | null
+          created_by: string | null
+          description: string
+          expense_date: string
+          expense_number: string
+          id: string
+          notes: string | null
+          payment_method: string | null
+          receipt_url: string | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string | null
+          created_by?: string | null
+          description: string
+          expense_date?: string
+          expense_number: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          receipt_url?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string
+          expense_date?: string
+          expense_number?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          receipt_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_items: {
         Row: {
           actual_qty: number | null
@@ -135,6 +185,133 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          due_date: string | null
+          id: string
+          image_url: string | null
+          invoice_date: string
+          invoice_number: string
+          invoice_type: string | null
+          notes: string | null
+          paid_amount: number | null
+          purchase_order_id: string | null
+          status: string | null
+          supplier_id: string | null
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          image_url?: string | null
+          invoice_date?: string
+          invoice_number: string
+          invoice_type?: string | null
+          notes?: string | null
+          paid_amount?: number | null
+          purchase_order_id?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          due_date?: string | null
+          id?: string
+          image_url?: string | null
+          invoice_date?: string
+          invoice_number?: string
+          invoice_type?: string | null
+          notes?: string | null
+          paid_amount?: number | null
+          purchase_order_id?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          created_by: string | null
+          id: string
+          invoice_id: string | null
+          notes: string | null
+          payment_date: string
+          payment_method: string | null
+          reference_number: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string | null
+          reference_number?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string | null
+          reference_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
         ]
@@ -501,6 +678,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_expense_number: { Args: never; Returns: string }
+      generate_invoice_number: { Args: never; Returns: string }
       generate_order_number: { Args: never; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
