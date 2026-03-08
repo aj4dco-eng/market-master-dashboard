@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -78,18 +78,55 @@ function mapRow(raw: Record<string, any>, mapping: Record<string, string>) {
   return out;
 }
 
-function downloadTemplate(name: string, headers: string[][]) {
-  const ws = XLSX.utils.aoa_to_sheet(headers);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-  XLSX.writeFile(wb, name);
+async function downloadTemplate(name: string, headers: string[][]) {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Sheet1");
+  headers.forEach((row) => ws.addRow(row));
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name; a.click();
+  URL.revokeObjectURL(url);
 }
 
-function exportToExcel(data: any[], filename: string) {
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-  XLSX.writeFile(wb, filename);
+async function exportToExcel(data: any[], filename: string) {
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Sheet1");
+  if (data.length > 0) {
+    ws.addRow(Object.keys(data[0]));
+    data.forEach((row) => ws.addRow(Object.values(row)));
+  }
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function parseExcelFile(buf: ArrayBuffer): Promise<Record<string, any>[]> {
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(buf);
+  const ws = wb.worksheets[0];
+  if (!ws || ws.rowCount < 2) return [];
+  const headers: string[] = [];
+  ws.getRow(1).eachCell((cell, colNumber) => {
+    headers[colNumber - 1] = String(cell.value ?? "");
+  });
+  const rows: Record<string, any>[] = [];
+  for (let i = 2; i <= ws.rowCount; i++) {
+    const row = ws.getRow(i);
+    const obj: Record<string, any> = {};
+    let hasData = false;
+    headers.forEach((h, idx) => {
+      const val = row.getCell(idx + 1).value;
+      if (val !== null && val !== undefined && val !== "") hasData = true;
+      obj[h] = val;
+    });
+    if (hasData) rows.push(obj);
+  }
+  return rows;
 }
 
 /* ─────────── Drop Zone ─────────── */
@@ -177,9 +214,7 @@ function ProductsImportTab({ toast }: { toast: any }) {
     setParsing(true);
     try {
       const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf);
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const raw: Record<string, any>[] = XLSX.utils.sheet_to_json(ws);
+      const raw = await parseExcelFile(buf);
 
       // Fetch existing products
       const { data: existing } = await (supabase.from("products" as any)).select("id, name");
@@ -386,9 +421,7 @@ function OrdersImportTab({ toast }: { toast: any }) {
     setParsing(true);
     try {
       const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf);
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const raw: Record<string, any>[] = XLSX.utils.sheet_to_json(ws);
+      const raw = await parseExcelFile(buf);
 
       const rows: OrderRow[] = raw.map((r) => {
         const m = mapRow(r, orderColMap);
