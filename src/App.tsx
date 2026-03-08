@@ -10,6 +10,7 @@ import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import AccountantDashboard from "./pages/dashboard/AccountantDashboard";
 import EmployeeDashboard from "./pages/dashboard/EmployeeDashboard";
 import SuppliersPage from "./pages/SuppliersPage";
+import ProductsPage from "./pages/ProductsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={["admin", "accountant", "employee"]}>
                   <SuppliersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/products"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "employee"]}>
+                  <ProductsPage />
                 </ProtectedRoute>
               }
             />
