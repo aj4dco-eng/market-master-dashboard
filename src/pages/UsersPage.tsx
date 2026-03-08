@@ -132,6 +132,7 @@ export default function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       setDialogOpen(false);
       toast.success(editingUser ? "تم تحديث المستخدم" : "تم إضافة المستخدم");
+      logActivity({ actionType: editingUser ? "update" : "create", module: "users", description: editingUser ? `تعديل مستخدم: ${form.full_name}` : `إضافة مستخدم: ${form.email}` });
     },
     onError: (e: any) => toast.error(e.message || "حدث خطأ")
   });
