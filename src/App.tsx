@@ -30,6 +30,7 @@ const SalesPage = lazy(() => import("./pages/SalesPage"));
 const PermissionsPage = lazy(() => import("./pages/PermissionsPage"));
 const ImportPage = lazy(() => import("./pages/ImportPage"));
 const UserActivityPage = lazy(() => import("./pages/UserActivityPage"));
+const CategoriesPage = lazy(() => import("./pages/CategoriesPage"));
 
 const PageLoader = () => (
   <div className="flex-1 p-6 space-y-4 animate-pulse">
@@ -60,6 +61,7 @@ const App = () => (
               <Route path="/dashboard/employee" element={<ProtectedRoute allowedRoles={["employee"]}><EmployeeDashboard /></ProtectedRoute>} />
               <Route path="/suppliers" element={<ProtectedRoute allowedRoles={["admin", "accountant", "employee"]}><SuppliersPage /></ProtectedRoute>} />
               <Route path="/products" element={<ProtectedRoute allowedRoles={["admin", "employee", "accountant"]}><ProductsPage /></ProtectedRoute>} />
+              <Route path="/categories" element={<ProtectedRoute allowedRoles={["admin", "employee", "accountant"]}><CategoriesPage /></ProtectedRoute>} />
               <Route path="/orders" element={<ProtectedRoute allowedRoles={["admin", "employee", "accountant"]}><PurchaseOrdersPage /></ProtectedRoute>} />
               <Route path="/inventory" element={<ProtectedRoute allowedRoles={["admin", "accountant", "employee"]}><InventoryPage /></ProtectedRoute>} />
               <Route path="/reports" element={<ProtectedRoute allowedRoles={["admin", "accountant"]}><ReportsPage /></ProtectedRoute>} />

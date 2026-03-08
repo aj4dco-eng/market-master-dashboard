@@ -22,14 +22,12 @@ export default function SettingsPage() {
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">الإعدادات</h1>
         <Tabs defaultValue="store" dir="rtl">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="store">إعدادات المتجر</TabsTrigger>
             <TabsTrigger value="account">إعدادات الحساب</TabsTrigger>
-            <TabsTrigger value="categories">الأصناف</TabsTrigger>
           </TabsList>
           <TabsContent value="store"><StoreSettings /></TabsContent>
           <TabsContent value="account"><AccountSettings /></TabsContent>
-          <TabsContent value="categories"><CategoriesSettings /></TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
@@ -159,138 +157,5 @@ function AccountSettings() {
         </Button>
       </CardContent>
     </Card>
-  );
-}
-
-function CategoriesSettings() {
-  const queryClient = useQueryClient();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingCat, setEditingCat] = useState<any>(null);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  const { data: categories, isLoading } = useQuery({
-    queryKey: ["settings-categories"],
-    queryFn: async () => {
-      const { data } = await supabase.from("categories").select("*, products(count)").order("name");
-      return data ?? [];
-    },
-  });
-
-  const openAdd = () => { setEditingCat(null); setName(""); setDescription(""); setDialogOpen(true); };
-  const openEdit = (c: any) => { setEditingCat(c); setName(c.name); setDescription(c.description ?? ""); setDialogOpen(true); };
-
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      if (editingCat) {
-        const { error } = await supabase.from("categories").update({ name, description }).eq("id", editingCat.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("categories").insert({ name, description });
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["settings-categories"] });
-      setDialogOpen(false);
-      toast.success(editingCat ? "تم تحديث الصنف" : "تم إضافة الصنف");
-    },
-    onError: () => toast.error("حدث خطأ"),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("categories").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["settings-categories"] });
-      setDeleteId(null);
-      toast.success("تم حذف الصنف");
-    },
-    onError: () => toast.error("لا يمكن حذف الصنف - قد يكون مرتبطاً بمنتجات"),
-  });
-
-  const catToDelete = categories?.find(c => c.id === deleteId);
-  const productCount = (catToDelete as any)?.products?.[0]?.count ?? 0;
-
-  return (
-    <div className="space-y-4 mt-4">
-      <div className="flex justify-end">
-        <Button onClick={openAdd}><Plus className="ml-2 h-4 w-4" />إضافة صنف</Button>
-      </div>
-      <Card>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="p-6 space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>الاسم</TableHead>
-                  <TableHead>الوصف</TableHead>
-                  <TableHead>عدد المنتجات</TableHead>
-                  <TableHead>إجراءات</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {categories?.map((c: any) => (
-                  <TableRow key={c.id}>
-                    <TableCell className="font-medium">{c.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{c.description ?? "-"}</TableCell>
-                    <TableCell dir="ltr">{c.products?.[0]?.count ?? 0}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(c)}><Pencil className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setDeleteId(c.id)}><Trash2 className="h-4 w-4" /></Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {(!categories || categories.length === 0) && (
-                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">لا توجد أصناف</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>{editingCat ? "تعديل الصنف" : "إضافة صنف جديد"}</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div><Label>الاسم *</Label><Input value={name} onChange={e => setName(e.target.value)} /></div>
-            <div><Label>الوصف</Label><Textarea value={description} onChange={e => setDescription(e.target.value)} /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>إلغاء</Button>
-            <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !name.trim()}>
-              {saveMutation.isPending ? "جاري الحفظ..." : "حفظ"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={!!deleteId} onOpenChange={o => { if (!o) setDeleteId(null); }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>حذف الصنف</AlertDialogTitle>
-            <AlertDialogDescription>
-              {productCount > 0
-                ? `لا يمكن حذف هذا الصنف لأنه مرتبط بـ ${productCount} منتج.`
-                : "هل أنت متأكد من حذف هذا الصنف؟"}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
-            {productCount === 0 && (
-              <AlertDialogAction onClick={() => deleteId && deleteMutation.mutate(deleteId)} className="bg-destructive text-destructive-foreground">حذف</AlertDialogAction>
-            )}
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
   );
 }
