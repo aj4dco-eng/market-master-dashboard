@@ -35,6 +35,110 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_items: {
+        Row: {
+          actual_qty: number | null
+          barcode: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          product_id: string | null
+          product_name: string
+          purchase_price: number | null
+          session_id: string | null
+          system_qty: number | null
+          unit: string | null
+        }
+        Insert: {
+          actual_qty?: number | null
+          barcode?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          product_id?: string | null
+          product_name: string
+          purchase_price?: number | null
+          session_id?: string | null
+          system_qty?: number | null
+          unit?: string | null
+        }
+        Update: {
+          actual_qty?: number | null
+          barcode?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          product_id?: string | null
+          product_name?: string
+          purchase_price?: number | null
+          session_id?: string | null
+          system_qty?: number | null
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          notes: string | null
+          session_name: string
+          started_at: string | null
+          status: string | null
+          total_actual_value: number | null
+          total_system_value: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          session_name: string
+          started_at?: string | null
+          status?: string | null
+          total_actual_value?: number | null
+          total_system_value?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          session_name?: string
+          started_at?: string | null
+          status?: string | null
+          total_actual_value?: number | null
+          total_system_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_sessions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           barcode: string | null
