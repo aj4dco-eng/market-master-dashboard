@@ -64,6 +64,19 @@ export function AppSidebar() {
     },
   });
 
+  const { data: awaitingApprovalCount } = useQuery({
+    queryKey: ["orders-awaiting-approval-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("purchase_orders")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "awaiting_approval");
+      if (error) return 0;
+      return count ?? 0;
+    },
+    enabled: role === "admin",
+  });
+
   const menuItems: MenuItem[] = [
     { title: "لوحة التحكم", url: "/dashboard/admin", icon: LayoutDashboard, roles: ["admin"] },
     { title: "لوحة التحكم", url: "/dashboard/accountant", icon: LayoutDashboard, roles: ["accountant"] },
