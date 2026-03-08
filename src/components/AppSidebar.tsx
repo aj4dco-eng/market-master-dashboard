@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth, AppRole } from "@/contexts/AuthContext";
+import { usePermissions, type PermissionModule } from "@/hooks/usePermissions";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -39,11 +40,13 @@ interface MenuItem {
   url: string;
   icon: React.ComponentType<{ className?: string }>;
   roles: AppRole[];
+  permModule?: PermissionModule;
   badge?: string | number;
 }
 
 export function AppSidebar() {
   const { role, signOut } = useAuth();
+  const { canView } = usePermissions();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
 
@@ -63,21 +66,25 @@ export function AppSidebar() {
     { title: "لوحة التحكم", url: "/dashboard/admin", icon: LayoutDashboard, roles: ["admin"] },
     { title: "لوحة التحكم", url: "/dashboard/accountant", icon: LayoutDashboard, roles: ["accountant"] },
     { title: "لوحة التحكم", url: "/dashboard/employee", icon: LayoutDashboard, roles: ["employee"] },
-    { title: "المستخدمون", url: "/users", icon: Users, roles: ["admin"] },
-    { title: "الموردون", url: "/suppliers", icon: Truck, roles: ["admin", "accountant", "employee"], badge: supplierCount },
-    { title: "المنتجات", url: "/products", icon: Package, roles: ["admin", "employee", "accountant"] },
-    { title: "الطلبيات", url: "/orders", icon: ClipboardList, roles: ["admin", "accountant", "employee"] },
-    { title: "الجرد", url: "/inventory", icon: ClipboardCheck, roles: ["admin", "accountant", "employee"] },
-    { title: "التقارير", url: "/reports", icon: BarChart3, roles: ["admin", "accountant"] },
-    { title: "نقطة البيع", url: "/pos", icon: ShoppingCart, roles: ["admin", "employee"] },
-    { title: "المبيعات", url: "/sales", icon: ReceiptText, roles: ["admin", "accountant", "employee"] },
-    { title: "الفواتير", url: "/invoices", icon: FileText, roles: ["admin", "accountant"] },
-    { title: "المصروفات", url: "/expenses", icon: Receipt, roles: ["admin", "accountant"] },
-    { title: "الصلاحيات", url: "/permissions", icon: Shield, roles: ["admin"] },
-    { title: "الإعدادات", url: "/settings", icon: Settings, roles: ["admin"] },
+    { title: "المستخدمون", url: "/users", icon: Users, roles: ["admin"], permModule: "users" },
+    { title: "الموردون", url: "/suppliers", icon: Truck, roles: ["admin", "accountant", "employee"], permModule: "suppliers", badge: supplierCount },
+    { title: "المنتجات", url: "/products", icon: Package, roles: ["admin", "employee", "accountant"], permModule: "products" },
+    { title: "الطلبيات", url: "/orders", icon: ClipboardList, roles: ["admin", "accountant", "employee"], permModule: "orders" },
+    { title: "الجرد", url: "/inventory", icon: ClipboardCheck, roles: ["admin", "accountant", "employee"], permModule: "inventory" },
+    { title: "التقارير", url: "/reports", icon: BarChart3, roles: ["admin", "accountant"], permModule: "reports" },
+    { title: "نقطة البيع", url: "/pos", icon: ShoppingCart, roles: ["admin", "employee"], permModule: "pos" },
+    { title: "المبيعات", url: "/sales", icon: ReceiptText, roles: ["admin", "accountant", "employee"], permModule: "sales" },
+    { title: "الفواتير", url: "/invoices", icon: FileText, roles: ["admin", "accountant"], permModule: "invoices" },
+    { title: "المصروفات", url: "/expenses", icon: Receipt, roles: ["admin", "accountant"], permModule: "expenses" },
+    { title: "الصلاحيات", url: "/permissions", icon: Shield, roles: ["admin"], permModule: "permissions" },
+    { title: "الإعدادات", url: "/settings", icon: Settings, roles: ["admin"], permModule: "settings" },
   ];
 
-  const filteredItems = menuItems.filter((item) => role && item.roles.includes(role));
+  const filteredItems = menuItems.filter((item) => {
+    if (!role || !item.roles.includes(role)) return false;
+    if (item.permModule && !canView(item.permModule)) return false;
+    return true;
+  });
 
   return (
     <Sidebar collapsible="icon" side="right">
