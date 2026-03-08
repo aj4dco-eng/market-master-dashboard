@@ -124,7 +124,7 @@ export default function AdminDashboard() {
     });
   }, [chartOrders, chartSales]);
 
-  const isLoading = l1 || l2 || l3 || l4 || l5;
+  const isLoading = l1 || l2 || l3 || l4 || l5 || l6;
 
   const stats = [
     { title: "إجمالي المنتجات", value: productCount?.toLocaleString("en-US") ?? "0", icon: Package, color: "text-primary" },
@@ -133,6 +133,7 @@ export default function AdminDashboard() {
     { title: "قيمة المخزون الإجمالية", value: formatCurrency(stockValue), icon: Warehouse, color: "text-primary" },
     { title: "منتجات تحت الحد الأدنى", value: lowStockCount.toLocaleString("en-US"), icon: AlertTriangle, color: lowStockCount > 0 ? "text-destructive" : "text-muted-foreground" },
     { title: "طلبيات معلقة", value: pendingOrders?.toLocaleString("en-US") ?? "0", icon: Clock, color: "text-warning" },
+    { title: "بانتظار الموافقة", value: (awaitingApproval ?? 0).toLocaleString("en-US"), icon: ShieldCheck, color: (awaitingApproval ?? 0) > 0 ? "text-destructive" : "text-muted-foreground" },
     { title: "مبيعات اليوم", value: formatCurrency(todaySales?.total ?? 0), icon: Receipt, color: "text-accent" },
     { title: "عدد فواتير اليوم", value: (todaySales?.count ?? 0).toLocaleString("en-US"), icon: ReceiptText, color: "text-primary" },
   ];
