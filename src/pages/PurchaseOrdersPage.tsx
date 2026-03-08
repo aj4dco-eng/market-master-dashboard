@@ -51,6 +51,7 @@ export interface PurchaseOrderItem {
 const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   pending: { label: "معلقة", variant: "outline" },
   awaiting_approval: { label: "بانتظار الموافقة", variant: "default" },
+  approved: { label: "تمت الموافقة", variant: "default" },
   received: { label: "مستلمة", variant: "default" },
   partial: { label: "جزئية", variant: "secondary" },
   cancelled: { label: "ملغاة", variant: "destructive" },
@@ -59,6 +60,7 @@ const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondar
 const STATUS_COLORS: Record<string, string> = {
   pending: "border-warning/50 bg-warning/10 text-warning",
   awaiting_approval: "border-primary/50 bg-primary/10 text-primary",
+  approved: "border-emerald-500/50 bg-emerald-500/10 text-emerald-600",
   received: "border-accent/50 bg-accent/10 text-accent",
   partial: "border-secondary bg-secondary text-secondary-foreground",
   cancelled: "border-destructive/50 bg-destructive/10 text-destructive",
