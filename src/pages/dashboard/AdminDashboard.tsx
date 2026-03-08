@@ -13,6 +13,7 @@ const formatCurrency = (n: number) => `₪${n.toLocaleString("en-US", { minimumF
 const ARABIC_MONTHS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const today = now.toISOString().split("T")[0];
