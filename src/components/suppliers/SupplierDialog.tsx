@@ -146,6 +146,7 @@ export function SupplierDialog({ open, onOpenChange, supplier }: SupplierDialogP
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });
       toast({ title: isEdit ? "تم تحديث المورد بنجاح" : "تم إضافة المورد بنجاح" });
       onOpenChange(false);
+      logActivity({ actionType: isEdit ? "update" : "create", module: "suppliers", description: isEdit ? "تعديل مورد" : "إضافة مورد جديد" });
     },
     onError: (error) => {
       toast({ title: "خطأ", description: error.message, variant: "destructive" });

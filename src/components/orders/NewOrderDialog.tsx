@@ -184,6 +184,7 @@ export function NewOrderDialog({ open, onOpenChange }: NewOrderDialogProps) {
         title: "تم إنشاء الطلبية",
         description: status === "awaiting_approval" ? "الطلبية تحتاج موافقة المدير (تجاوزت حد الطلبية)" : undefined,
       });
+      logActivity({ actionType: "create", module: "orders", description: "إنشاء طلبية شراء جديدة" });
     },
     onError: (err: any) => {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });

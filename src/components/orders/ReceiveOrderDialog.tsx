@@ -128,6 +128,7 @@ export function ReceiveOrderDialog({ orderId, open, onOpenChange, readOnly = fal
       queryClient.invalidateQueries({ queryKey: ["order-item-counts"] });
       onOpenChange(false);
       toast({ title: "تم استلام الطلبية بنجاح" });
+      logActivity({ actionType: "update", module: "orders", description: "استلام طلبية شراء", details: { order_id: orderId } });
     },
     onError: (err: any) => {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });

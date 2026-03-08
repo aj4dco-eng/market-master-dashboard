@@ -186,6 +186,7 @@ export function ProductDialog({ open, onOpenChange, product, categories, supplie
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       onOpenChange(false);
       toast({ title: product ? "تم تحديث المنتج" : "تم إضافة المنتج" });
+      logActivity({ actionType: product ? "update" : "create", module: "products", description: product ? `تعديل منتج: ${form.name}` : `إضافة منتج: ${form.name}` });
     },
     onError: (err: any) => {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
