@@ -331,3 +331,218 @@ function SuppliersReport() {
     </div>
   );
 }
+
+const FCOLORS = ["hsl(217, 91%, 50%)", "hsl(151, 55%, 42%)", "hsl(38, 92%, 50%)", "hsl(0, 72%, 51%)", "hsl(270, 60%, 50%)", "hsl(190, 70%, 45%)", "hsl(330, 60%, 50%)", "hsl(50, 80%, 50%)"];
+const ARABIC_MONTHS_F = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+
+function FinancialReport() {
+  const now = new Date();
+  const [startDate, setStartDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0]);
+  const [endDate, setEndDate] = useState(now.toISOString().split("T")[0]);
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString().split("T")[0];
+
+  const { data: ordersData } = useQuery({
+    queryKey: ["fin-orders", startDate, endDate],
+    queryFn: async () => {
+      const { data } = await supabase.from("purchase_orders").select("total_amount").in("status", ["received", "partial"]).gte("order_date", startDate).lte("order_date", endDate);
+      return data ?? [];
+    },
+  });
+
+  const { data: invoicesData } = useQuery({
+    queryKey: ["fin-invoices", startDate, endDate],
+    queryFn: async () => {
+      const { data } = await supabase.from("invoices" as any).select("*, suppliers(name)").gte("invoice_date", startDate).lte("invoice_date", endDate);
+      return (data ?? []) as any[];
+    },
+  });
+
+  const { data: expensesData } = useQuery({
+    queryKey: ["fin-expenses", startDate, endDate],
+    queryFn: async () => {
+      const { data } = await supabase.from("expenses" as any).select("amount, category").gte("expense_date", startDate).lte("expense_date", endDate);
+      return (data ?? []) as any[];
+    },
+  });
+
+  const { data: paymentsData } = useQuery({
+    queryKey: ["fin-payments", startDate, endDate],
+    queryFn: async () => {
+      const { data } = await supabase.from("payments" as any).select("amount").gte("payment_date", startDate).lte("payment_date", endDate);
+      return (data ?? []) as any[];
+    },
+  });
+
+  const { data: products } = useQuery({
+    queryKey: ["fin-products"],
+    queryFn: async () => {
+      const { data } = await supabase.from("products").select("current_stock, purchase_price").eq("is_active", true);
+      return data ?? [];
+    },
+  });
+
+  // Chart data: last 6 months purchases vs expenses
+  const { data: chartOrders } = useQuery({
+    queryKey: ["fin-chart-orders"],
+    queryFn: async () => {
+      const { data } = await supabase.from("purchase_orders").select("created_at, total_amount").in("status", ["received", "partial"]).gte("created_at", sixMonthsAgo);
+      return data ?? [];
+    },
+  });
+
+  const { data: chartExpenses } = useQuery({
+    queryKey: ["fin-chart-expenses"],
+    queryFn: async () => {
+      const { data } = await supabase.from("expenses" as any).select("expense_date, amount").gte("expense_date", sixMonthsAgo);
+      return (data ?? []) as any[];
+    },
+  });
+
+  const totalPurchases = ordersData?.reduce((s, o) => s + (o.total_amount ?? 0), 0) ?? 0;
+  const totalInvoicesPaid = invoicesData?.filter((i: any) => i.status === "paid").reduce((s: number, i: any) => s + (i.paid_amount ?? 0), 0) ?? 0;
+  const totalExpenses = expensesData?.reduce((s: number, e: any) => s + (e.amount ?? 0), 0) ?? 0;
+  const totalPayments = paymentsData?.reduce((s: number, p: any) => s + (p.amount ?? 0), 0) ?? 0;
+  const stockValue = products?.reduce((s, p) => s + (p.current_stock ?? 0) * (p.purchase_price ?? 0), 0) ?? 0;
+  const netCosts = totalInvoicesPaid + totalExpenses;
+
+  const lineData = useMemo(() => {
+    const grouped: Record<string, { purchases: number; expenses: number }> = {};
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      grouped[`${d.getFullYear()}-${d.getMonth()}`] = { purchases: 0, expenses: 0 };
+    }
+    chartOrders?.forEach(o => {
+      if (!o.created_at) return;
+      const d = new Date(o.created_at);
+      const k = `${d.getFullYear()}-${d.getMonth()}`;
+      if (k in grouped) grouped[k].purchases += (o.total_amount ?? 0);
+    });
+    chartExpenses?.forEach((e: any) => {
+      if (!e.expense_date) return;
+      const d = new Date(e.expense_date);
+      const k = `${d.getFullYear()}-${d.getMonth()}`;
+      if (k in grouped) grouped[k].expenses += (e.amount ?? 0);
+    });
+    return Object.entries(grouped).map(([k, v]) => {
+      const month = parseInt(k.split("-")[1]);
+      return { name: ARABIC_MONTHS_F[month], ...v };
+    });
+  }, [chartOrders, chartExpenses]);
+
+  const pieData = useMemo(() => {
+    if (!expensesData) return [];
+    const grouped: Record<string, number> = {};
+    expensesData.forEach((e: any) => { grouped[e.category] = (grouped[e.category] ?? 0) + (e.amount ?? 0); });
+    return Object.entries(grouped).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+  }, [expensesData]);
+
+  const supplierSummary = useMemo(() => {
+    if (!invoicesData) return [];
+    const grouped: Record<string, { name: string; count: number; total: number; paid: number }> = {};
+    invoicesData.forEach((i: any) => {
+      const sid = i.supplier_id ?? "none";
+      const name = i.suppliers?.name ?? "غير محدد";
+      if (!grouped[sid]) grouped[sid] = { name, count: 0, total: 0, paid: 0 };
+      grouped[sid].count++;
+      grouped[sid].total += (i.total_amount ?? 0);
+      grouped[sid].paid += (i.paid_amount ?? 0);
+    });
+    return Object.values(grouped).sort((a, b) => b.total - a.total);
+  }, [invoicesData]);
+
+  const kpis = [
+    { title: "إجمالي المشتريات", value: formatCurrency(totalPurchases) },
+    { title: "فواتير مدفوعة", value: formatCurrency(totalInvoicesPaid) },
+    { title: "إجمالي المصروفات", value: formatCurrency(totalExpenses) },
+    { title: "إجمالي المدفوعات", value: formatCurrency(totalPayments) },
+    { title: "قيمة المخزون", value: formatCurrency(stockValue) },
+    { title: "صافي التكاليف", value: formatCurrency(netCosts) },
+  ];
+
+  return (
+    <div className="space-y-4 mt-4">
+      <div className="flex gap-4 items-center">
+        <Input type="date" dir="ltr" className="w-40" value={startDate} onChange={e => setStartDate(e.target.value)} />
+        <span className="text-muted-foreground">إلى</span>
+        <Input type="date" dir="ltr" className="w-40" value={endDate} onChange={e => setEndDate(e.target.value)} />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {kpis.map(k => (
+          <Card key={k.title}>
+            <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{k.title}</CardTitle></CardHeader>
+            <CardContent><div className="text-xl font-bold" dir="ltr">{k.value}</div></CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader><CardTitle className="text-base">المشتريات مقابل المصروفات</CardTitle></CardHeader>
+          <CardContent>
+            <div className="h-[250px]" dir="ltr">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={lineData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                  <Legend />
+                  <Line type="monotone" dataKey="purchases" name="المشتريات" stroke="hsl(217, 91%, 50%)" strokeWidth={2} />
+                  <Line type="monotone" dataKey="expenses" name="المصروفات" stroke="hsl(0, 72%, 51%)" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-base">توزيع المصروفات حسب الفئة</CardTitle></CardHeader>
+          <CardContent>
+            <div className="h-[250px]" dir="ltr">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name }) => name}>
+                    {pieData.map((_, i) => <Cell key={i} fill={FCOLORS[i % FCOLORS.length]} />)}
+                  </Pie>
+                  <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">ملخص الفواتير حسب المورد</CardTitle></CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>المورد</TableHead>
+                <TableHead>عدد الفواتير</TableHead>
+                <TableHead>الإجمالي</TableHead>
+                <TableHead>المدفوع</TableHead>
+                <TableHead>المتبقي</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {supplierSummary.map((s, i) => (
+                <TableRow key={i}>
+                  <TableCell className="font-medium">{s.name}</TableCell>
+                  <TableCell dir="ltr">{s.count}</TableCell>
+                  <TableCell dir="ltr">{formatCurrency(s.total)}</TableCell>
+                  <TableCell dir="ltr">{formatCurrency(s.paid)}</TableCell>
+                  <TableCell dir="ltr" className={s.total - s.paid > 0 ? "text-destructive" : ""}>{formatCurrency(s.total - s.paid)}</TableCell>
+                </TableRow>
+              ))}
+              {supplierSummary.length === 0 && (
+                <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">لا توجد بيانات</TableCell></TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
