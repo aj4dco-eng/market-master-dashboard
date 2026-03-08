@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
