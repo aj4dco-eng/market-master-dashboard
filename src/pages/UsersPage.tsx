@@ -242,11 +242,11 @@ export default function UsersPage() {
               </Select>
             </div>
             {editingUser && (
-              <div className="space-y-2">
+              <div>
                 <Label>الحالة</Label>
-                <div className="flex items-center gap-3">
-                  <Switch checked={form.is_active} onCheckedChange={v => setForm(f => ({ ...f, is_active: v }))} />
-                  <span className="text-sm text-muted-foreground">{form.is_active ? "نشط" : "معطل"}</span>
+                <div className="flex items-center gap-2 mt-2">
+                  <Switch id="user-status" checked={form.is_active} onCheckedChange={v => setForm(f => ({ ...f, is_active: v }))} />
+                  <Label htmlFor="user-status" className="text-sm font-normal text-muted-foreground cursor-pointer">{form.is_active ? "نشط" : "معطل"}</Label>
                 </div>
               </div>
             )}
