@@ -214,9 +214,7 @@ function ProductsImportTab({ toast }: { toast: any }) {
     setParsing(true);
     try {
       const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf);
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const raw: Record<string, any>[] = XLSX.utils.sheet_to_json(ws);
+      const raw = await parseExcelFile(buf);
 
       // Fetch existing products
       const { data: existing } = await (supabase.from("products" as any)).select("id, name");
