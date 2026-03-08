@@ -240,7 +240,18 @@ export default function PurchaseOrdersPage() {
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewOrderId(order.id)}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {(order.status === "pending" || order.status === "awaiting_approval") && perm.canEdit("orders") && (
+                        {order.status === "awaiting_approval" && role === "admin" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-emerald-600 hover:text-emerald-700"
+                            onClick={() => approveMutation.mutate(order.id)}
+                            title="موافقة"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {(order.status === "pending" || order.status === "approved") && perm.canEdit("orders") && (
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setReceiveOrderId(order.id)}>
                             <PackageCheck className="h-4 w-4" />
                           </Button>
