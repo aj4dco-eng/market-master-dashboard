@@ -6,12 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 const formatCurrency = (n: number) => `₪${n.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 
 const ARABIC_MONTHS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const today = now.toISOString().split("T")[0];
@@ -132,8 +134,8 @@ export default function AdminDashboard() {
     { title: "طلبيات هذا الشهر", value: monthlyOrders?.toLocaleString("en-US") ?? "0", icon: ShoppingCart, color: "text-warning" },
     { title: "قيمة المخزون الإجمالية", value: formatCurrency(stockValue), icon: Warehouse, color: "text-primary" },
     { title: "منتجات تحت الحد الأدنى", value: lowStockCount.toLocaleString("en-US"), icon: AlertTriangle, color: lowStockCount > 0 ? "text-destructive" : "text-muted-foreground" },
-    { title: "طلبيات معلقة", value: pendingOrders?.toLocaleString("en-US") ?? "0", icon: Clock, color: "text-warning" },
-    { title: "بانتظار الموافقة", value: (awaitingApproval ?? 0).toLocaleString("en-US"), icon: ShieldCheck, color: (awaitingApproval ?? 0) > 0 ? "text-destructive" : "text-muted-foreground" },
+    { title: "طلبيات معلقة", value: pendingOrders?.toLocaleString("en-US") ?? "0", icon: Clock, color: "text-warning", link: "/orders?status=pending" },
+    { title: "بانتظار الموافقة", value: (awaitingApproval ?? 0).toLocaleString("en-US"), icon: ShieldCheck, color: (awaitingApproval ?? 0) > 0 ? "text-destructive" : "text-muted-foreground", link: "/orders?status=awaiting_approval" },
     { title: "مبيعات اليوم", value: formatCurrency(todaySales?.total ?? 0), icon: Receipt, color: "text-accent" },
     { title: "عدد فواتير اليوم", value: (todaySales?.count ?? 0).toLocaleString("en-US"), icon: ReceiptText, color: "text-primary" },
   ];
@@ -144,7 +146,7 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-bold">لوحة تحكم المدير</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
-            <Card key={stat.title} className="hover:shadow-md transition-shadow">
+            <Card key={stat.title} className={`hover:shadow-md transition-shadow ${stat.link ? "cursor-pointer" : ""}`} onClick={() => stat.link && navigate(stat.link)}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
                 <stat.icon className={`h-5 w-5 ${stat.color}`} />

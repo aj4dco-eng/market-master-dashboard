@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/DashboardLayout";
@@ -72,8 +73,9 @@ export default function PurchaseOrdersPage() {
   const { logActivity } = useActivityLog();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
-  const [statusTab, setStatusTab] = useState("all");
+  const [statusTab, setStatusTab] = useState(searchParams.get("status") || "all");
   const [newOrderOpen, setNewOrderOpen] = useState(false);
   const [receiveOrderId, setReceiveOrderId] = useState<string | null>(null);
   const [viewOrderId, setViewOrderId] = useState<string | null>(null);
