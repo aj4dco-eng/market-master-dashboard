@@ -421,9 +421,7 @@ function OrdersImportTab({ toast }: { toast: any }) {
     setParsing(true);
     try {
       const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf);
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const raw: Record<string, any>[] = XLSX.utils.sheet_to_json(ws);
+      const raw = await parseExcelFile(buf);
 
       const rows: OrderRow[] = raw.map((r) => {
         const m = mapRow(r, orderColMap);
