@@ -13,6 +13,7 @@ import {
   ClipboardList,
   ClipboardCheck,
   BarChart3,
+  Shield,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth, AppRole } from "@/contexts/AuthContext";
@@ -72,6 +73,7 @@ export function AppSidebar() {
     { title: "المبيعات", url: "/sales", icon: ReceiptText, roles: ["admin", "accountant", "employee"] },
     { title: "الفواتير", url: "/invoices", icon: FileText, roles: ["admin", "accountant"] },
     { title: "المصروفات", url: "/expenses", icon: Receipt, roles: ["admin", "accountant"] },
+    { title: "الصلاحيات", url: "/permissions", icon: Shield, roles: ["admin"] },
     { title: "الإعدادات", url: "/settings", icon: Settings, roles: ["admin"] },
   ];
 
