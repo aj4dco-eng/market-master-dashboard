@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, ClipboardList, Eye, PackageCheck, X } from "lucide-react";
+import { Plus, Search, ClipboardList, Eye, PackageCheck, X, CheckCircle } from "lucide-react";
 import { NewOrderDialog } from "@/components/orders/NewOrderDialog";
 import { ReceiveOrderDialog } from "@/components/orders/ReceiveOrderDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -51,6 +51,7 @@ export interface PurchaseOrderItem {
 const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   pending: { label: "معلقة", variant: "outline" },
   awaiting_approval: { label: "بانتظار الموافقة", variant: "default" },
+  approved: { label: "تمت الموافقة", variant: "default" },
   received: { label: "مستلمة", variant: "default" },
   partial: { label: "جزئية", variant: "secondary" },
   cancelled: { label: "ملغاة", variant: "destructive" },
@@ -59,6 +60,7 @@ const STATUS_MAP: Record<string, { label: string; variant: "default" | "secondar
 const STATUS_COLORS: Record<string, string> = {
   pending: "border-warning/50 bg-warning/10 text-warning",
   awaiting_approval: "border-primary/50 bg-primary/10 text-primary",
+  approved: "border-emerald-500/50 bg-emerald-500/10 text-emerald-600",
   received: "border-accent/50 bg-accent/10 text-accent",
   partial: "border-secondary bg-secondary text-secondary-foreground",
   cancelled: "border-destructive/50 bg-destructive/10 text-destructive",
@@ -100,6 +102,21 @@ export default function PurchaseOrdersPage() {
         counts[item.order_id] = (counts[item.order_id] || 0) + 1;
       });
       return counts;
+    },
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("purchase_orders")
+        .update({ status: "approved" })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ["purchase-orders"] });
+      toast({ title: "تمت الموافقة على الطلبية" });
+      logActivity({ actionType: "update", module: "orders", description: "الموافقة على طلبية", details: { order_id: id } });
     },
   });
 
@@ -153,6 +170,7 @@ export default function PurchaseOrdersPage() {
             <TabsTrigger value="all">الكل</TabsTrigger>
             <TabsTrigger value="pending">معلقة</TabsTrigger>
             <TabsTrigger value="awaiting_approval">بانتظار الموافقة</TabsTrigger>
+            <TabsTrigger value="approved">تمت الموافقة</TabsTrigger>
             <TabsTrigger value="received">مستلمة</TabsTrigger>
             <TabsTrigger value="partial">جزئية</TabsTrigger>
             <TabsTrigger value="cancelled">ملغاة</TabsTrigger>
@@ -222,7 +240,18 @@ export default function PurchaseOrdersPage() {
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewOrderId(order.id)}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {(order.status === "pending" || order.status === "awaiting_approval") && perm.canEdit("orders") && (
+                        {order.status === "awaiting_approval" && role === "admin" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-emerald-600 hover:text-emerald-700"
+                            onClick={() => approveMutation.mutate(order.id)}
+                            title="موافقة"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {(order.status === "pending" || order.status === "approved") && perm.canEdit("orders") && (
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setReceiveOrderId(order.id)}>
                             <PackageCheck className="h-4 w-4" />
                           </Button>
