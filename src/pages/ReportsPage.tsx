@@ -376,12 +376,30 @@ function FinancialReport() {
   const { data: products } = useQuery({
     queryKey: ["fin-products"],
     queryFn: async () => {
-      const { data } = await supabase.from("products").select("current_stock, purchase_price").eq("is_active", true);
+      const { data } = await supabase.from("products").select("id, current_stock, purchase_price, selling_price").eq("is_active", true);
       return data ?? [];
     },
   });
 
-  // Chart data: last 6 months purchases vs expenses
+  const { data: salesData } = useQuery({
+    queryKey: ["fin-sales", startDate, endDate],
+    queryFn: async () => {
+      const { data } = await (supabase.from("sales" as any) as any).select("total_amount, status").gte("created_at", `${startDate}T00:00:00`).lte("created_at", `${endDate}T23:59:59`);
+      return ((data ?? []) as any[]).filter((s: any) => s.status === "completed");
+    },
+  });
+
+  const { data: saleItemsData } = useQuery({
+    queryKey: ["fin-sale-items", startDate, endDate],
+    queryFn: async () => {
+      const { data: sales } = await (supabase.from("sales" as any) as any).select("id").gte("created_at", `${startDate}T00:00:00`).lte("created_at", `${endDate}T23:59:59`).eq("status", "completed");
+      if (!sales?.length) return [];
+      const ids = (sales as any[]).map((s: any) => s.id);
+      const { data } = await (supabase.from("sale_items" as any) as any).select("product_id, product_name, quantity, unit_price, total_price").in("sale_id", ids);
+      return (data ?? []) as any[];
+    },
+  });
+
   const { data: chartOrders } = useQuery({
     queryKey: ["fin-chart-orders"],
     queryFn: async () => {
@@ -398,18 +416,52 @@ function FinancialReport() {
     },
   });
 
+  const { data: chartSales } = useQuery({
+    queryKey: ["fin-chart-sales"],
+    queryFn: async () => {
+      const { data } = await (supabase.from("sales" as any) as any).select("created_at, total_amount, status").gte("created_at", sixMonthsAgo);
+      return ((data ?? []) as any[]).filter((s: any) => s.status === "completed");
+    },
+  });
+
   const totalPurchases = ordersData?.reduce((s, o) => s + (o.total_amount ?? 0), 0) ?? 0;
   const totalInvoicesPaid = invoicesData?.filter((i: any) => i.status === "paid").reduce((s: number, i: any) => s + (i.paid_amount ?? 0), 0) ?? 0;
   const totalExpenses = expensesData?.reduce((s: number, e: any) => s + (e.amount ?? 0), 0) ?? 0;
   const totalPayments = paymentsData?.reduce((s: number, p: any) => s + (p.amount ?? 0), 0) ?? 0;
   const stockValue = products?.reduce((s, p) => s + (p.current_stock ?? 0) * (p.purchase_price ?? 0), 0) ?? 0;
   const netCosts = totalInvoicesPaid + totalExpenses;
+  const totalSales = salesData?.reduce((s: number, sale: any) => s + (sale.total_amount ?? 0), 0) ?? 0;
+
+  const grossProfit = useMemo(() => {
+    if (!saleItemsData || !products) return 0;
+    const productMap: Record<string, number> = {};
+    products.forEach(p => { productMap[p.id] = p.purchase_price ?? 0; });
+    return (saleItemsData as any[]).reduce((s: number, item: any) => {
+      const pp = productMap[item.product_id] ?? 0;
+      return s + ((item.unit_price - pp) * item.quantity);
+    }, 0);
+  }, [saleItemsData, products]);
+
+  const topProducts = useMemo(() => {
+    if (!saleItemsData || !products) return [];
+    const productMap: Record<string, number> = {};
+    products.forEach(p => { productMap[p.id] = p.purchase_price ?? 0; });
+    const grouped: Record<string, { name: string; qty: number; revenue: number; profit: number }> = {};
+    (saleItemsData as any[]).forEach((item: any) => {
+      const pid = item.product_id ?? "unknown";
+      if (!grouped[pid]) grouped[pid] = { name: item.product_name, qty: 0, revenue: 0, profit: 0 };
+      grouped[pid].qty += item.quantity;
+      grouped[pid].revenue += item.total_price;
+      grouped[pid].profit += (item.unit_price - (productMap[pid] ?? 0)) * item.quantity;
+    });
+    return Object.values(grouped).sort((a, b) => b.revenue - a.revenue).slice(0, 10);
+  }, [saleItemsData, products]);
 
   const lineData = useMemo(() => {
-    const grouped: Record<string, { purchases: number; expenses: number }> = {};
+    const grouped: Record<string, { purchases: number; expenses: number; sales: number }> = {};
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      grouped[`${d.getFullYear()}-${d.getMonth()}`] = { purchases: 0, expenses: 0 };
+      grouped[`${d.getFullYear()}-${d.getMonth()}`] = { purchases: 0, expenses: 0, sales: 0 };
     }
     chartOrders?.forEach(o => {
       if (!o.created_at) return;
@@ -423,11 +475,17 @@ function FinancialReport() {
       const k = `${d.getFullYear()}-${d.getMonth()}`;
       if (k in grouped) grouped[k].expenses += (e.amount ?? 0);
     });
+    chartSales?.forEach((s: any) => {
+      if (!s.created_at) return;
+      const d = new Date(s.created_at);
+      const k = `${d.getFullYear()}-${d.getMonth()}`;
+      if (k in grouped) grouped[k].sales += (s.total_amount ?? 0);
+    });
     return Object.entries(grouped).map(([k, v]) => {
       const month = parseInt(k.split("-")[1]);
       return { name: ARABIC_MONTHS_F[month], ...v };
     });
-  }, [chartOrders, chartExpenses]);
+  }, [chartOrders, chartExpenses, chartSales]);
 
   const pieData = useMemo(() => {
     if (!expensesData) return [];
@@ -452,10 +510,12 @@ function FinancialReport() {
 
   const kpis = [
     { title: "إجمالي المشتريات", value: formatCurrency(totalPurchases) },
+    { title: "إجمالي المبيعات", value: formatCurrency(totalSales) },
     { title: "فواتير مدفوعة", value: formatCurrency(totalInvoicesPaid) },
     { title: "إجمالي المصروفات", value: formatCurrency(totalExpenses) },
-    { title: "إجمالي المدفوعات", value: formatCurrency(totalPayments) },
+    { title: "إجمالي الربح الإجمالي", value: formatCurrency(grossProfit) },
     { title: "قيمة المخزون", value: formatCurrency(stockValue) },
+    { title: "إجمالي المدفوعات", value: formatCurrency(totalPayments) },
     { title: "صافي التكاليف", value: formatCurrency(netCosts) },
   ];
 
@@ -467,7 +527,7 @@ function FinancialReport() {
         <Input type="date" dir="ltr" className="w-40" value={endDate} onChange={e => setEndDate(e.target.value)} />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map(k => (
           <Card key={k.title}>
             <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{k.title}</CardTitle></CardHeader>
@@ -478,7 +538,7 @@ function FinancialReport() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader><CardTitle className="text-base">المشتريات مقابل المصروفات</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">المشتريات والمبيعات والمصروفات</CardTitle></CardHeader>
           <CardContent>
             <div className="h-[250px]" dir="ltr">
               <ResponsiveContainer width="100%" height="100%">
@@ -489,6 +549,7 @@ function FinancialReport() {
                   <Tooltip formatter={(v: number) => formatCurrency(v)} />
                   <Legend />
                   <Line type="monotone" dataKey="purchases" name="المشتريات" stroke="hsl(217, 91%, 50%)" strokeWidth={2} />
+                  <Line type="monotone" dataKey="sales" name="المبيعات" stroke="hsl(151, 55%, 42%)" strokeWidth={2} />
                   <Line type="monotone" dataKey="expenses" name="المصروفات" stroke="hsl(0, 72%, 51%)" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
@@ -512,6 +573,34 @@ function FinancialReport() {
           </CardContent>
         </Card>
       </div>
+
+      {topProducts.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-base">أفضل المنتجات مبيعاً</CardTitle></CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>المنتج</TableHead>
+                  <TableHead>الكمية المباعة</TableHead>
+                  <TableHead>الإيرادات</TableHead>
+                  <TableHead>الربح</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {topProducts.map((p, i) => (
+                  <TableRow key={i}>
+                    <TableCell className="font-medium">{p.name}</TableCell>
+                    <TableCell dir="ltr">{p.qty.toLocaleString("en-US")}</TableCell>
+                    <TableCell dir="ltr">{formatCurrency(p.revenue)}</TableCell>
+                    <TableCell dir="ltr" className={p.profit > 0 ? "text-accent" : "text-destructive"}>{formatCurrency(p.profit)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader><CardTitle className="text-base">ملخص الفواتير حسب المورد</CardTitle></CardHeader>

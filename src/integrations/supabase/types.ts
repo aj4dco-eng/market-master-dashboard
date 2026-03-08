@@ -529,6 +529,119 @@ export type Database = {
           },
         ]
       }
+      sale_items: {
+        Row: {
+          barcode: string | null
+          created_at: string | null
+          discount_percent: number | null
+          id: string
+          product_id: string | null
+          product_name: string
+          quantity: number
+          sale_id: string | null
+          total_price: number
+          unit: string | null
+          unit_price: number
+        }
+        Insert: {
+          barcode?: string | null
+          created_at?: string | null
+          discount_percent?: number | null
+          id?: string
+          product_id?: string | null
+          product_name: string
+          quantity: number
+          sale_id?: string | null
+          total_price: number
+          unit?: string | null
+          unit_price: number
+        }
+        Update: {
+          barcode?: string | null
+          created_at?: string | null
+          discount_percent?: number | null
+          id?: string
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          sale_id?: string | null
+          total_price?: number
+          unit?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales: {
+        Row: {
+          cashier_id: string | null
+          change_amount: number | null
+          created_at: string | null
+          discount_amount: number | null
+          id: string
+          notes: string | null
+          paid_amount: number
+          payment_method: string | null
+          sale_number: string
+          status: string | null
+          subtotal: number
+          tax_amount: number | null
+          total_amount: number
+        }
+        Insert: {
+          cashier_id?: string | null
+          change_amount?: number | null
+          created_at?: string | null
+          discount_amount?: number | null
+          id?: string
+          notes?: string | null
+          paid_amount?: number
+          payment_method?: string | null
+          sale_number: string
+          status?: string | null
+          subtotal?: number
+          tax_amount?: number | null
+          total_amount?: number
+        }
+        Update: {
+          cashier_id?: string | null
+          change_amount?: number | null
+          created_at?: string | null
+          discount_amount?: number | null
+          id?: string
+          notes?: string | null
+          paid_amount?: number
+          payment_method?: string | null
+          sale_number?: string
+          status?: string | null
+          subtotal?: number
+          tax_amount?: number | null
+          total_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_cashier_id_fkey"
+            columns: ["cashier_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           address: string | null
@@ -681,6 +794,7 @@ export type Database = {
       generate_expense_number: { Args: never; Returns: string }
       generate_invoice_number: { Args: never; Returns: string }
       generate_order_number: { Args: never; Returns: string }
+      generate_sale_number: { Args: never; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

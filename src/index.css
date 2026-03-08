@@ -102,3 +102,8 @@
     font-family: 'Tajawal', sans-serif;
   }
 }
+
+@media print {
+  body > * { display: none !important; }
+  .receipt-content { display: block !important; }
+}

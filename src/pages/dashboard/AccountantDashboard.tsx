@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShoppingCart, TrendingUp, Warehouse, Clock, FileText, Receipt } from "lucide-react";
+import { ShoppingCart, TrendingUp, Warehouse, Clock, FileText, Receipt, DollarSign, BarChart3 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,7 +27,7 @@ export default function AccountantDashboard() {
   const { data: products } = useQuery({
     queryKey: ["acc-products"],
     queryFn: async () => {
-      const { data } = await supabase.from("products").select("current_stock, purchase_price").eq("is_active", true);
+      const { data } = await supabase.from("products").select("id, current_stock, purchase_price, selling_price").eq("is_active", true);
       return data ?? [];
     },
   });
@@ -52,10 +52,32 @@ export default function AccountantDashboard() {
   const { data: monthlyExpenses } = useQuery({
     queryKey: ["acc-monthly-expenses"],
     queryFn: async () => {
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
       const { data } = await supabase.from("expenses" as any).select("amount").gte("expense_date", startOfMonth);
       return ((data ?? []) as any[]).reduce((s: number, e: any) => s + (e.amount ?? 0), 0);
     },
+  });
+
+  const { data: monthlySalesTotal } = useQuery({
+    queryKey: ["acc-monthly-sales"],
+    queryFn: async () => {
+      const { data } = await (supabase.from("sales" as any) as any).select("total_amount, status").gte("created_at", `${startOfMonth}T00:00:00`);
+      return ((data ?? []) as any[]).filter((s: any) => s.status === "completed").reduce((s: number, sale: any) => s + (sale.total_amount ?? 0), 0);
+    },
+  });
+
+  const { data: monthlyProfit } = useQuery({
+    queryKey: ["acc-monthly-profit"],
+    queryFn: async () => {
+      const { data: saleItems } = await (supabase.from("sale_items" as any) as any).select("product_id, quantity, unit_price, total_price");
+      if (!saleItems) return 0;
+      const productMap: Record<string, number> = {};
+      products?.forEach(p => { productMap[p.id] = p.purchase_price ?? 0; });
+      return (saleItems as any[]).reduce((s: number, item: any) => {
+        const purchasePrice = productMap[item.product_id] ?? 0;
+        return s + ((item.unit_price - purchasePrice) * item.quantity);
+      }, 0);
+    },
+    enabled: !!products,
   });
 
   const monthlyPurchases = useMemo(() => {
@@ -96,13 +118,15 @@ export default function AccountantDashboard() {
     { title: "بانتظار الموافقة", value: awaitingCount?.toLocaleString("en-US") ?? "0", icon: Clock, color: "text-destructive" },
     { title: "فواتير غير مدفوعة", value: formatCurrency(unpaidInvoices ?? 0), icon: FileText, color: "text-destructive" },
     { title: "مصروفات هذا الشهر", value: formatCurrency(monthlyExpenses ?? 0), icon: Receipt, color: "text-warning" },
+    { title: "إجمالي المبيعات هذا الشهر", value: formatCurrency(monthlySalesTotal ?? 0), icon: DollarSign, color: "text-accent" },
+    { title: "الربح المتوقع هذا الشهر", value: formatCurrency(monthlyProfit ?? 0), icon: BarChart3, color: "text-primary" },
   ];
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">لوحة تحكم المحاسب</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
             <Card key={stat.title} className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
