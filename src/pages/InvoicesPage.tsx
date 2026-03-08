@@ -148,8 +148,7 @@ export default function InvoicesPage() {
         const path = `${Date.now()}-${imageFile.name}`;
         const { error: upErr } = await supabase.storage.from("invoices").upload(path, imageFile);
         if (!upErr) {
-          const { data: urlData } = supabase.storage.from("invoices").getPublicUrl(path);
-          imageUrl = urlData.publicUrl;
+          imageUrl = path; // Store the path, not a public URL
         }
       }
       const { error } = await supabase.from("invoices" as any).insert({

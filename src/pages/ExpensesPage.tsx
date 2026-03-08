@@ -127,8 +127,7 @@ export default function ExpensesPage() {
         const path = `${Date.now()}-${receiptFile.name}`;
         const { error: upErr } = await supabase.storage.from("receipts").upload(path, receiptFile);
         if (!upErr) {
-          const { data: urlData } = supabase.storage.from("receipts").getPublicUrl(path);
-          receiptUrl = urlData.publicUrl;
+          receiptUrl = path; // Store the path, not a public URL
         }
       }
       const { error } = await supabase.from("expenses" as any).insert({
