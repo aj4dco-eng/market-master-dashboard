@@ -10,6 +10,8 @@ import {
   Store,
   Truck,
   ClipboardList,
+  ClipboardCheck,
+  BarChart3,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth, AppRole } from "@/contexts/AuthContext";
@@ -63,6 +65,8 @@ export function AppSidebar() {
     { title: "الموردون", url: "/suppliers", icon: Truck, roles: ["admin", "accountant", "employee"], badge: supplierCount },
     { title: "المنتجات", url: "/products", icon: Package, roles: ["admin", "employee", "accountant"] },
     { title: "الطلبيات", url: "/orders", icon: ClipboardList, roles: ["admin", "accountant", "employee"] },
+    { title: "الجرد", url: "/inventory", icon: ClipboardCheck, roles: ["admin", "accountant", "employee"] },
+    { title: "التقارير", url: "/reports", icon: BarChart3, roles: ["admin", "accountant"] },
     { title: "المبيعات", url: "/sales", icon: ShoppingCart, roles: ["admin", "accountant", "employee"] },
     { title: "الفواتير", url: "/invoices", icon: FileText, roles: ["admin", "accountant"] },
     { title: "المحاسبة", url: "/accounting", icon: Calculator, roles: ["admin", "accountant"] },
