@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, ClipboardList, Eye, PackageCheck, X } from "lucide-react";
+import { Plus, Search, ClipboardList, Eye, PackageCheck, X, CheckCircle } from "lucide-react";
 import { NewOrderDialog } from "@/components/orders/NewOrderDialog";
 import { ReceiveOrderDialog } from "@/components/orders/ReceiveOrderDialog";
 import { useToast } from "@/hooks/use-toast";
