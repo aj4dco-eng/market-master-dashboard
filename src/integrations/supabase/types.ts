@@ -14,6 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          barcode: string | null
+          category_id: string | null
+          created_at: string | null
+          current_stock: number | null
+          id: string
+          image_thumbnail: string | null
+          image_url: string | null
+          is_active: boolean | null
+          min_stock_alert: number | null
+          name: string
+          purchase_price: number
+          selling_price: number
+          supplier_id: string | null
+          unit: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          barcode?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          current_stock?: number | null
+          id?: string
+          image_thumbnail?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          min_stock_alert?: number | null
+          name: string
+          purchase_price?: number
+          selling_price?: number
+          supplier_id?: string | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          barcode?: string | null
+          category_id?: string | null
+          created_at?: string | null
+          current_stock?: number | null
+          id?: string
+          image_thumbnail?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          min_stock_alert?: number | null
+          name?: string
+          purchase_price?: number
+          selling_price?: number
+          supplier_id?: string | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
