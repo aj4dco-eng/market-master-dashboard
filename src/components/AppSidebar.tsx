@@ -129,7 +129,14 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="space-y-2">
+        {!collapsed && (
+          <div className="px-3 py-1">
+            <Badge variant="outline" className="text-[10px] text-sidebar-foreground/50 border-sidebar-border">
+              الإصدار 1.0.0
+            </Badge>
+          </div>
+        )}
         <Button
           variant="ghost"
           className="w-full justify-start text-sidebar-foreground/70 hover:text-destructive hover:bg-sidebar-accent/50"
