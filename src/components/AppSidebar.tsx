@@ -13,6 +13,7 @@ import {
   ClipboardList,
   ClipboardCheck,
   BarChart3,
+  Shield,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth, AppRole } from "@/contexts/AuthContext";
