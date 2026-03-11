@@ -239,7 +239,7 @@ export default function ProductsPage() {
                 variant={viewMode === "table" ? "default" : "ghost"}
                 size="icon"
                 className="rounded-none h-9 w-9"
-                onClick={() => setViewMode("table")}
+                onClick={() => handleViewMode("table")}
               >
                 <List className="h-4 w-4" />
               </Button>
