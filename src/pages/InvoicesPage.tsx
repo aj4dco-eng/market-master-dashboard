@@ -131,7 +131,7 @@ export default function InvoicesPage() {
     if (tab !== "all") list = list.filter(i => i.status === tab);
     if (search) {
       const q = search.toLowerCase();
-      list = list.filter(i => i.invoice_number.toLowerCase().includes(q) || (i.suppliers?.name ?? "").toLowerCase().includes(q));
+      list = list.filter(i => i.invoice_number.toLowerCase().includes(q) || (i.suppliers?.company_name ?? "").toLowerCase().includes(q) || (i.suppliers?.name ?? "").toLowerCase().includes(q));
     }
     return list;
   }, [invoices, tab, search]);
