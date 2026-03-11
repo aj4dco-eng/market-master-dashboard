@@ -52,7 +52,14 @@ export default function ProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [supplierFilter, setSupplierFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
+  const [viewMode, setViewMode] = useState<"grid" | "table">(() => {
+    const saved = localStorage.getItem("products-view-mode");
+    return saved === "grid" ? "grid" : "table";
+  });
+  const handleViewMode = (mode: "grid" | "table") => {
+    setViewMode(mode);
+    localStorage.setItem("products-view-mode", mode);
+  };
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deactivateId, setDeactivateId] = useState<string | null>(null);
