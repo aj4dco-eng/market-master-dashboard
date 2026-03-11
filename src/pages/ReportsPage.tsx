@@ -272,7 +272,7 @@ function SuppliersReport() {
     if (!orders) return [];
     const grouped: Record<string, { name: string; count: number; total: number; lastOrder: string; rating: number | null }> = {};
     orders.forEach(o => {
-      const name = (o.suppliers as any)?.company_name || (o.suppliers as any)?.name ?? "غير محدد";
+      const name = (o.suppliers as any)?.company_name || (o.suppliers as any)?.name || "غير محدد";
       const rating = (o.suppliers as any)?.rating ?? null;
       if (!grouped[o.supplier_id]) grouped[o.supplier_id] = { name, count: 0, total: 0, lastOrder: "", rating };
       grouped[o.supplier_id].count++;
