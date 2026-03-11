@@ -29,7 +29,7 @@ type Invoice = {
   purchase_order_id: string | null; invoice_date: string; due_date: string | null;
   total_amount: number; paid_amount: number; status: string; notes: string | null;
   image_url: string | null; created_by: string | null; created_at: string;
-  suppliers?: { name: string } | null;
+  suppliers?: { name: string; company_name?: string | null } | null;
 };
 
 type Payment = {
@@ -79,7 +79,7 @@ export default function InvoicesPage() {
   const { data: invoices, isLoading } = useQuery({
     queryKey: ["invoices"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("invoices" as any).select("*, suppliers(name)").order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("invoices" as any).select("*, suppliers(name, company_name)").order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as unknown as Invoice[];
     },
@@ -88,7 +88,7 @@ export default function InvoicesPage() {
   const { data: suppliers } = useQuery({
     queryKey: ["inv-suppliers"],
     queryFn: async () => {
-      const { data } = await supabase.from("suppliers").select("id, name").eq("is_active", true).order("name");
+      const { data } = await supabase.from("suppliers").select("id, name, company_name").eq("is_active", true).order("name");
       return data ?? [];
     },
   });
@@ -131,7 +131,7 @@ export default function InvoicesPage() {
     if (tab !== "all") list = list.filter(i => i.status === tab);
     if (search) {
       const q = search.toLowerCase();
-      list = list.filter(i => i.invoice_number.toLowerCase().includes(q) || (i.suppliers?.name ?? "").toLowerCase().includes(q));
+      list = list.filter(i => i.invoice_number.toLowerCase().includes(q) || (i.suppliers?.company_name ?? "").toLowerCase().includes(q) || (i.suppliers?.name ?? "").toLowerCase().includes(q));
     }
     return list;
   }, [invoices, tab, search]);
@@ -277,7 +277,7 @@ export default function InvoicesPage() {
                     return (
                       <TableRow key={inv.id}>
                         <TableCell dir="ltr" className="font-mono">{inv.invoice_number}</TableCell>
-                        <TableCell>{inv.suppliers?.name ?? "-"}</TableCell>
+                        <TableCell>{inv.suppliers?.company_name || inv.suppliers?.name || "-"}</TableCell>
                         <TableCell dir="ltr">{new Date(inv.invoice_date).toLocaleDateString("en-US")}</TableCell>
                         <TableCell dir="ltr">{inv.due_date ? new Date(inv.due_date).toLocaleDateString("en-US") : "-"}</TableCell>
                         <TableCell dir="ltr">{formatCurrency(inv.total_amount)}</TableCell>
@@ -314,7 +314,7 @@ export default function InvoicesPage() {
               <Label>المورد</Label>
               <Select value={supplierId} onValueChange={v => { setSupplierId(v); setOrderId(""); }}>
                 <SelectTrigger><SelectValue placeholder="اختر المورد" /></SelectTrigger>
-                <SelectContent>{suppliers?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                <SelectContent>{suppliers?.map(s => <SelectItem key={s.id} value={s.id}>{s.company_name || s.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             {supplierId && orders && orders.length > 0 && (
@@ -394,7 +394,7 @@ export default function InvoicesPage() {
               </SheetHeader>
               <div className="mt-4 space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><span className="text-muted-foreground">المورد:</span> {detailInvoice.suppliers?.name ?? "-"}</div>
+                  <div><span className="text-muted-foreground">المورد:</span> {detailInvoice.suppliers?.company_name || detailInvoice.suppliers?.name || "-"}</div>
                   <div><span className="text-muted-foreground">التاريخ:</span> <span dir="ltr">{new Date(detailInvoice.invoice_date).toLocaleDateString("en-US")}</span></div>
                   <div><span className="text-muted-foreground">الاستحقاق:</span> <span dir="ltr">{detailInvoice.due_date ? new Date(detailInvoice.due_date).toLocaleDateString("en-US") : "-"}</span></div>
                   <div><span className="text-muted-foreground">الإجمالي:</span> <span dir="ltr" className="font-semibold">{formatCurrency(detailInvoice.total_amount)}</span></div>

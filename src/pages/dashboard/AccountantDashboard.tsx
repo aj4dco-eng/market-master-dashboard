@@ -19,7 +19,7 @@ export default function AccountantDashboard() {
   const { data: orders } = useQuery({
     queryKey: ["acc-orders"],
     queryFn: async () => {
-      const { data } = await supabase.from("purchase_orders").select("*, suppliers(name)").in("status", ["received", "partial"]);
+      const { data } = await supabase.from("purchase_orders").select("*, suppliers(name, company_name)").in("status", ["received", "partial"]);
       return data ?? [];
     },
   });
@@ -104,7 +104,7 @@ export default function AccountantDashboard() {
     if (!orders) return [];
     const grouped: Record<string, { name: string; value: number }> = {};
     orders.forEach(o => {
-      const name = (o.suppliers as any)?.name ?? "غير محدد";
+      const name = (o.suppliers as any)?.company_name || (o.suppliers as any)?.name || "غير محدد";
       if (!grouped[o.supplier_id]) grouped[o.supplier_id] = { name, value: 0 };
       grouped[o.supplier_id].value += (o.total_amount ?? 0);
     });
@@ -157,7 +157,7 @@ export default function AccountantDashboard() {
                   {recentOrders.map(o => (
                     <TableRow key={o.id}>
                       <TableCell dir="ltr" className="font-mono">{o.order_number}</TableCell>
-                      <TableCell>{(o.suppliers as any)?.name ?? "-"}</TableCell>
+                      <TableCell>{(o.suppliers as any)?.company_name || (o.suppliers as any)?.name || "-"}</TableCell>
                       <TableCell dir="ltr">{o.order_date ? new Date(o.order_date).toLocaleDateString("en-US") : "-"}</TableCell>
                       <TableCell dir="ltr">{formatCurrency(o.total_amount ?? 0)}</TableCell>
                     </TableRow>
