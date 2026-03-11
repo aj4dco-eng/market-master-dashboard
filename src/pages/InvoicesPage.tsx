@@ -29,7 +29,7 @@ type Invoice = {
   purchase_order_id: string | null; invoice_date: string; due_date: string | null;
   total_amount: number; paid_amount: number; status: string; notes: string | null;
   image_url: string | null; created_by: string | null; created_at: string;
-  suppliers?: { name: string } | null;
+  suppliers?: { name: string; company_name?: string | null } | null;
 };
 
 type Payment = {
