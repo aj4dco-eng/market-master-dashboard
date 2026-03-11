@@ -352,7 +352,7 @@ function FinancialReport() {
   const { data: invoicesData } = useQuery({
     queryKey: ["fin-invoices", startDate, endDate],
     queryFn: async () => {
-      const { data } = await supabase.from("invoices" as any).select("*, suppliers(name)").gte("invoice_date", startDate).lte("invoice_date", endDate);
+      const { data } = await supabase.from("invoices" as any).select("*, suppliers(name, company_name)").gte("invoice_date", startDate).lte("invoice_date", endDate);
       return (data ?? []) as any[];
     },
   });
