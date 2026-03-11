@@ -88,7 +88,7 @@ export default function InvoicesPage() {
   const { data: suppliers } = useQuery({
     queryKey: ["inv-suppliers"],
     queryFn: async () => {
-      const { data } = await supabase.from("suppliers").select("id, name").eq("is_active", true).order("name");
+      const { data } = await supabase.from("suppliers").select("id, name, company_name").eq("is_active", true).order("name");
       return data ?? [];
     },
   });
