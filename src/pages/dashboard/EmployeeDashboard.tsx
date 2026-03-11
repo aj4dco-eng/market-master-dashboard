@@ -19,7 +19,7 @@ export default function EmployeeDashboard() {
   const { data: products, isLoading: l1 } = useQuery({
     queryKey: ["emp-products"],
     queryFn: async () => {
-      const { data } = await supabase.from("products").select("name, current_stock, min_stock_alert, supplier_id, suppliers(name)").eq("is_active", true);
+      const { data } = await supabase.from("products").select("name, current_stock, min_stock_alert, supplier_id, suppliers(name, company_name)").eq("is_active", true);
       return data ?? [];
     },
   });
