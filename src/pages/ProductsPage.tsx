@@ -13,7 +13,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Search, LayoutGrid, List, Package, AlertTriangle, Edit } from "lucide-react";
+import { Plus, Search, LayoutGrid, List, Package, AlertTriangle, Edit, Download } from "lucide-react";
+import ExcelJS from "exceljs";
 import { ProductDialog } from "@/components/products/ProductDialog";
 import { useToast } from "@/hooks/use-toast";
 
