@@ -146,6 +146,53 @@ export default function ProductsPage() {
     return "text-accent font-semibold";
   };
 
+  const exportToExcel = async () => {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("المنتجات");
+    ws.views = [{ rightToLeft: true }];
+    ws.columns = [
+      { header: "الاسم", key: "name", width: 30 },
+      { header: "الباركود", key: "barcode", width: 18 },
+      { header: "الصنف", key: "category", width: 18 },
+      { header: "المورد", key: "supplier", width: 20 },
+      { header: "الوحدة", key: "unit", width: 12 },
+      { header: "سعر الشراء", key: "purchase_price", width: 14 },
+      { header: "سعر البيع", key: "selling_price", width: 14 },
+      { header: "المخزون", key: "current_stock", width: 12 },
+      { header: "الحد الأدنى", key: "min_stock", width: 12 },
+      { header: "الحالة", key: "status", width: 10 },
+    ];
+    const headerRow = ws.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF4F81BD" } };
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+
+    filtered.forEach((p) => {
+      ws.addRow({
+        name: p.name,
+        barcode: p.barcode || "",
+        category: getCategoryName(p.category_id),
+        supplier: getSupplierName(p.supplier_id),
+        unit: p.unit || "",
+        purchase_price: p.purchase_price,
+        selling_price: p.selling_price,
+        current_stock: p.current_stock ?? 0,
+        min_stock: p.min_stock_alert ?? 0,
+        status: p.is_active ? "نشط" : "غير نشط",
+      });
+    });
+
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `products-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "تم تصدير المنتجات بنجاح" });
+  };
+
   const getImageUrl = (url: string | null) => {
     if (!url) return null;
     if (url.startsWith("http")) return url;
