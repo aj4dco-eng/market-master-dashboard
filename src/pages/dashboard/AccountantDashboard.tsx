@@ -157,7 +157,7 @@ export default function AccountantDashboard() {
                   {recentOrders.map(o => (
                     <TableRow key={o.id}>
                       <TableCell dir="ltr" className="font-mono">{o.order_number}</TableCell>
-                      <TableCell>{(o.suppliers as any)?.name ?? "-"}</TableCell>
+                      <TableCell>{(o.suppliers as any)?.company_name || (o.suppliers as any)?.name || "-"}</TableCell>
                       <TableCell dir="ltr">{o.order_date ? new Date(o.order_date).toLocaleDateString("en-US") : "-"}</TableCell>
                       <TableCell dir="ltr">{formatCurrency(o.total_amount ?? 0)}</TableCell>
                     </TableRow>

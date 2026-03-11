@@ -121,7 +121,7 @@ export default function EmployeeDashboard() {
                       <TableCell>{p.name}</TableCell>
                       <TableCell dir="ltr" className="text-destructive font-semibold">{(p.current_stock ?? 0).toLocaleString("en-US")}</TableCell>
                       <TableCell dir="ltr">{(p.min_stock_alert ?? 0).toLocaleString("en-US")}</TableCell>
-                      <TableCell>{(p.suppliers as any)?.name ?? "-"}</TableCell>
+                      <TableCell>{(p.suppliers as any)?.company_name || (p.suppliers as any)?.name || "-"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

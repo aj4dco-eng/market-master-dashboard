@@ -394,7 +394,7 @@ export default function InvoicesPage() {
               </SheetHeader>
               <div className="mt-4 space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><span className="text-muted-foreground">المورد:</span> {detailInvoice.suppliers?.name ?? "-"}</div>
+                  <div><span className="text-muted-foreground">المورد:</span> {detailInvoice.suppliers?.company_name || detailInvoice.suppliers?.name || "-"}</div>
                   <div><span className="text-muted-foreground">التاريخ:</span> <span dir="ltr">{new Date(detailInvoice.invoice_date).toLocaleDateString("en-US")}</span></div>
                   <div><span className="text-muted-foreground">الاستحقاق:</span> <span dir="ltr">{detailInvoice.due_date ? new Date(detailInvoice.due_date).toLocaleDateString("en-US") : "-"}</span></div>
                   <div><span className="text-muted-foreground">الإجمالي:</span> <span dir="ltr" className="font-semibold">{formatCurrency(detailInvoice.total_amount)}</span></div>

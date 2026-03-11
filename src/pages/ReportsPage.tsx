@@ -499,7 +499,7 @@ function FinancialReport() {
     const grouped: Record<string, { name: string; count: number; total: number; paid: number }> = {};
     invoicesData.forEach((i: any) => {
       const sid = i.supplier_id ?? "none";
-      const name = i.suppliers?.name ?? "غير محدد";
+      const name = i.suppliers?.company_name || i.suppliers?.name || "غير محدد";
       if (!grouped[sid]) grouped[sid] = { name, count: 0, total: 0, paid: 0 };
       grouped[sid].count++;
       grouped[sid].total += (i.total_amount ?? 0);
