@@ -166,7 +166,7 @@ function PurchasesReport() {
   const { data: orders, isLoading } = useQuery({
     queryKey: ["report-purchases", dateRange],
     queryFn: async () => {
-      const { data } = await supabase.from("purchase_orders").select("*, suppliers(name)").gte("order_date", dateRange.start).lte("order_date", dateRange.end).order("order_date", { ascending: false });
+      const { data } = await supabase.from("purchase_orders").select("*, suppliers(name, company_name)").gte("order_date", dateRange.start).lte("order_date", dateRange.end).order("order_date", { ascending: false });
       return data ?? [];
     },
   });
@@ -245,7 +245,7 @@ function PurchasesReport() {
               {orders?.map(o => (
                 <TableRow key={o.id}>
                   <TableCell dir="ltr" className="font-mono">{o.order_number}</TableCell>
-                  <TableCell>{(o.suppliers as any)?.name ?? "-"}</TableCell>
+                  <TableCell>{(o.suppliers as any)?.company_name || (o.suppliers as any)?.name || "-"}</TableCell>
                   <TableCell dir="ltr">{o.order_date ? new Date(o.order_date).toLocaleDateString("en-US") : "-"}</TableCell>
                   <TableCell dir="ltr">{formatCurrency(o.total_amount ?? 0)}</TableCell>
                   <TableCell><Badge variant="secondary">{statusLabel[o.status ?? ""] ?? o.status}</Badge></TableCell>
@@ -263,7 +263,7 @@ function SuppliersReport() {
   const { data: orders, isLoading } = useQuery({
     queryKey: ["report-suppliers"],
     queryFn: async () => {
-      const { data } = await supabase.from("purchase_orders").select("supplier_id, total_amount, order_date, suppliers(name, rating)");
+      const { data } = await supabase.from("purchase_orders").select("supplier_id, total_amount, order_date, suppliers(name, company_name, rating)");
       return data ?? [];
     },
   });
@@ -272,7 +272,7 @@ function SuppliersReport() {
     if (!orders) return [];
     const grouped: Record<string, { name: string; count: number; total: number; lastOrder: string; rating: number | null }> = {};
     orders.forEach(o => {
-      const name = (o.suppliers as any)?.name ?? "غير محدد";
+      const name = (o.suppliers as any)?.company_name || (o.suppliers as any)?.name || "غير محدد";
       const rating = (o.suppliers as any)?.rating ?? null;
       if (!grouped[o.supplier_id]) grouped[o.supplier_id] = { name, count: 0, total: 0, lastOrder: "", rating };
       grouped[o.supplier_id].count++;
