@@ -277,7 +277,7 @@ export default function InvoicesPage() {
                     return (
                       <TableRow key={inv.id}>
                         <TableCell dir="ltr" className="font-mono">{inv.invoice_number}</TableCell>
-                        <TableCell>{inv.suppliers?.name ?? "-"}</TableCell>
+                        <TableCell>{inv.suppliers?.company_name || inv.suppliers?.name || "-"}</TableCell>
                         <TableCell dir="ltr">{new Date(inv.invoice_date).toLocaleDateString("en-US")}</TableCell>
                         <TableCell dir="ltr">{inv.due_date ? new Date(inv.due_date).toLocaleDateString("en-US") : "-"}</TableCell>
                         <TableCell dir="ltr">{formatCurrency(inv.total_amount)}</TableCell>
