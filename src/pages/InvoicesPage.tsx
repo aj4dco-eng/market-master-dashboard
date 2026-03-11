@@ -79,7 +79,7 @@ export default function InvoicesPage() {
   const { data: invoices, isLoading } = useQuery({
     queryKey: ["invoices"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("invoices" as any).select("*, suppliers(name)").order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("invoices" as any).select("*, suppliers(name, company_name)").order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as unknown as Invoice[];
     },
