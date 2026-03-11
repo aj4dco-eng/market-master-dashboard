@@ -314,7 +314,7 @@ export default function InvoicesPage() {
               <Label>المورد</Label>
               <Select value={supplierId} onValueChange={v => { setSupplierId(v); setOrderId(""); }}>
                 <SelectTrigger><SelectValue placeholder="اختر المورد" /></SelectTrigger>
-                <SelectContent>{suppliers?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                <SelectContent>{suppliers?.map(s => <SelectItem key={s.id} value={s.id}>{s.company_name || s.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             {supplierId && orders && orders.length > 0 && (
