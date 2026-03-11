@@ -52,7 +52,14 @@ export default function ProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [supplierFilter, setSupplierFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
+  const [viewMode, setViewMode] = useState<"grid" | "table">(() => {
+    const saved = localStorage.getItem("products-view-mode");
+    return saved === "grid" ? "grid" : "table";
+  });
+  const handleViewMode = (mode: "grid" | "table") => {
+    setViewMode(mode);
+    localStorage.setItem("products-view-mode", mode);
+  };
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deactivateId, setDeactivateId] = useState<string | null>(null);
@@ -224,7 +231,7 @@ export default function ProductsPage() {
                 variant={viewMode === "grid" ? "default" : "ghost"}
                 size="icon"
                 className="rounded-none h-9 w-9"
-                onClick={() => setViewMode("grid")}
+                onClick={() => handleViewMode("grid")}
               >
                 <LayoutGrid className="h-4 w-4" />
               </Button>
@@ -232,7 +239,7 @@ export default function ProductsPage() {
                 variant={viewMode === "table" ? "default" : "ghost"}
                 size="icon"
                 className="rounded-none h-9 w-9"
-                onClick={() => setViewMode("table")}
+                onClick={() => handleViewMode("table")}
               >
                 <List className="h-4 w-4" />
               </Button>
