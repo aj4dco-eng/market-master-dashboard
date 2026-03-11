@@ -19,7 +19,7 @@ export default function AccountantDashboard() {
   const { data: orders } = useQuery({
     queryKey: ["acc-orders"],
     queryFn: async () => {
-      const { data } = await supabase.from("purchase_orders").select("*, suppliers(name)").in("status", ["received", "partial"]);
+      const { data } = await supabase.from("purchase_orders").select("*, suppliers(name, company_name)").in("status", ["received", "partial"]);
       return data ?? [];
     },
   });
