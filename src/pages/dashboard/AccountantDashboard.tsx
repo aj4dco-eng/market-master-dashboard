@@ -104,7 +104,7 @@ export default function AccountantDashboard() {
     if (!orders) return [];
     const grouped: Record<string, { name: string; value: number }> = {};
     orders.forEach(o => {
-      const name = (o.suppliers as any)?.name ?? "غير محدد";
+      const name = (o.suppliers as any)?.company_name || (o.suppliers as any)?.name || "غير محدد";
       if (!grouped[o.supplier_id]) grouped[o.supplier_id] = { name, value: 0 };
       grouped[o.supplier_id].value += (o.total_amount ?? 0);
     });
