@@ -263,7 +263,7 @@ function SuppliersReport() {
   const { data: orders, isLoading } = useQuery({
     queryKey: ["report-suppliers"],
     queryFn: async () => {
-      const { data } = await supabase.from("purchase_orders").select("supplier_id, total_amount, order_date, suppliers(name, rating)");
+      const { data } = await supabase.from("purchase_orders").select("supplier_id, total_amount, order_date, suppliers(name, company_name, rating)");
       return data ?? [];
     },
   });
