@@ -231,7 +231,7 @@ export default function ProductsPage() {
                 variant={viewMode === "grid" ? "default" : "ghost"}
                 size="icon"
                 className="rounded-none h-9 w-9"
-                onClick={() => setViewMode("grid")}
+                onClick={() => handleViewMode("grid")}
               >
                 <LayoutGrid className="h-4 w-4" />
               </Button>
