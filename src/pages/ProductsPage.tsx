@@ -237,6 +237,10 @@ export default function ProductsPage() {
                 <List className="h-4 w-4" />
               </Button>
             </div>
+            <Button variant="outline" onClick={exportToExcel} disabled={filtered.length === 0}>
+              <Download className="ml-2 h-4 w-4" />
+              تصدير Excel
+            </Button>
             {perm.canCreate("products") && (
               <Button onClick={() => { setEditingProduct(null); setDialogOpen(true); }}>
                 <Plus className="ml-2 h-4 w-4" />
