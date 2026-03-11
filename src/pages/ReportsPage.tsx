@@ -166,7 +166,7 @@ function PurchasesReport() {
   const { data: orders, isLoading } = useQuery({
     queryKey: ["report-purchases", dateRange],
     queryFn: async () => {
-      const { data } = await supabase.from("purchase_orders").select("*, suppliers(name)").gte("order_date", dateRange.start).lte("order_date", dateRange.end).order("order_date", { ascending: false });
+      const { data } = await supabase.from("purchase_orders").select("*, suppliers(name, company_name)").gte("order_date", dateRange.start).lte("order_date", dateRange.end).order("order_date", { ascending: false });
       return data ?? [];
     },
   });
