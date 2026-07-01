@@ -8,10 +8,24 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Package, Warehouse, TrendingUp, Star } from "lucide-react";
+import { Download, Package, Warehouse, TrendingUp, Star, Eye } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from "recharts";
+
+const ARABIC_MONTHS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+
+function presetRange(preset: string): { start: string; end: string } {
+  const now = new Date();
+  const iso = (d: Date) => d.toISOString().split("T")[0];
+  if (preset === "month") return { start: iso(new Date(now.getFullYear(), now.getMonth(), 1)), end: iso(now) };
+  if (preset === "last_month") return { start: iso(new Date(now.getFullYear(), now.getMonth() - 1, 1)), end: iso(new Date(now.getFullYear(), now.getMonth(), 0)) };
+  if (preset === "quarter") return { start: iso(new Date(now.getFullYear(), now.getMonth() - 2, 1)), end: iso(now) };
+  if (preset === "year") return { start: iso(new Date(now.getFullYear(), 0, 1)), end: iso(now) };
+  if (preset === "last_year") return { start: iso(new Date(now.getFullYear() - 1, 0, 1)), end: iso(new Date(now.getFullYear() - 1, 11, 31)) };
+  return { start: iso(new Date(now.getFullYear(), now.getMonth(), 1)), end: iso(now) };
+}
 
 const formatCurrency = (n: number) => `₪${n.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 
